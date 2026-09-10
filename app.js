@@ -4,9 +4,8 @@
 
 class App {
   constructor() {
-    this.currentLanguage = localStorage.getItem('chaya_kada_lang') || 'ml';
     this.radioStations = [];
-    this.customUserItems = JSON.parse(localStorage.getItem('chaya_kada_custom_items') || '[]');
+    this.lastUnmutedVolume = 0.8;
   }
 
   async init() {
@@ -15,46 +14,22 @@ class App {
     this._initRainCanvas();
     this._initVisualizerCanvas();
     
-    // Set initial language
-    if (this.currentLanguage !== 'ml') {
-      this.currentLanguage = 'ml';
-      this.toggleLanguage();
-    }
-
-    // Fetch live Malayalam stations from Radio-Browser API and restore saved station order
     await this.fetchMalayalamRadioStations();
-    
-    // Restore last saved settings
     this.restoreLastSavedSettings();
   }
 
   _bindDOM() {
     this.elements = {
-      // Header & Actions
-      langToggleBtn: document.getElementById('langToggleBtn'),
-      langText: document.getElementById('langText'),
-      adminModalBtn: document.getElementById('adminModalBtn'),
-      adminModal: document.getElementById('adminModal'),
-      closeModalBtn: document.getElementById('closeModalBtn'),
-      cancelModalBtn: document.getElementById('cancelModalBtn'),
-      saveCustomBtn: document.getElementById('saveCustomBtn'),
-      saveRadioOrderBtn: document.getElementById('saveRadioOrderBtn'),
-
-      // Admin Tabs
-      adminTabRadios: document.getElementById('adminTabRadios'),
-      adminTabCustom: document.getElementById('adminTabCustom'),
-      adminRadiosPanel: document.getElementById('adminRadiosPanel'),
-      adminCustomPanel: document.getElementById('adminCustomPanel'),
-      adminStationListContainer: document.getElementById('adminStationListContainer'),
-
       // Controls
       stationSelect: document.getElementById('stationSelect'),
       playPauseRadioBtn: document.getElementById('playPauseRadioBtn'),
       playIcon: document.getElementById('playIcon'),
       radioVolume: document.getElementById('radioVolume'),
 
-      // Now Playing UI
+      // Now Playing & Radio Frame UI
       radioPowerLed: document.getElementById('radioPowerLed'),
+      volKnobVisual: document.getElementById('volKnobVisual'),
+      tuneKnobVisual: document.getElementById('tuneKnobVisual'),
       tuningNeedle: document.getElementById('tuningNeedle'),
       sourceTag: document.getElementById('sourceTag'),
       nowPlayingTitle: document.getElementById('nowPlayingTitle'),
@@ -76,6 +51,56 @@ class App {
     const total = select.options.length || 1;
     const pct = Math.max(8, Math.min(92, (idx / (total - 1 || 1)) * 84 + 8));
     this.elements.tuningNeedle.style.left = `${pct}%`;
+
+    // Rotate the tuning knob visually (-135deg to +135deg)
+    if (this.elements.tuneKnobVisual) {
+      const angle = (idx / (total - 1 || 1)) * 270 - 135;
+      this.elements.tuneKnobVisual.style.transform = `rotate(${angle}deg)`;
+    }
+  }
+
+  setRadioVolumeLevel(volVal) {
+    const val = Math.max(0, Math.min(1, parseFloat(volVal || 0)));
+    if (val > 0) {
+      this.lastUnmutedVolume = val;
+    }
+    if (this.elements.radioVolume) {
+      this.elements.radioVolume.value = val;
+    }
+    if (window.audioEngine) {
+      window.audioEngine.setRadioVolume(val);
+    }
+    localStorage.setItem('chaya_kada_radio_volume', val);
+    this._updateVolumeKnobRotation(val);
+
+    this._updateVolumeKnobGlow();
+  }
+
+  _updateVolumeKnobGlow() {
+    if (!this.elements.volKnobVisual) return;
+    const vol = this.elements.radioVolume ? parseFloat(this.elements.radioVolume.value || 0) : 0;
+    const isPlaying = window.audioEngine ? window.audioEngine.isPlayingRadio : false;
+    const isLoading = window.audioEngine ? window.audioEngine.isLoadingRadio : false;
+
+    if (vol === 0) {
+      this.elements.volKnobVisual.classList.add('is-muted');
+      this.elements.volKnobVisual.classList.remove('is-streaming', 'loading');
+    } else if (isPlaying) {
+      this.elements.volKnobVisual.classList.add('is-streaming');
+      this.elements.volKnobVisual.classList.remove('is-muted', 'loading');
+    } else if (isLoading) {
+      this.elements.volKnobVisual.classList.add('loading');
+      this.elements.volKnobVisual.classList.remove('is-muted', 'is-streaming');
+    } else {
+      this.elements.volKnobVisual.classList.remove('is-muted', 'is-streaming', 'loading');
+    }
+  }
+
+  _updateVolumeKnobRotation(volVal) {
+    if (!this.elements.volKnobVisual) return;
+    const val = parseFloat(volVal || 0);
+    const angle = (val * 270) - 135; // 0 -> -135deg, 1 -> +135deg
+    this.elements.volKnobVisual.style.transform = `rotate(${angle}deg)`;
   }
 
   _displayStationDetails(url) {
@@ -84,7 +109,7 @@ class App {
     let rawName = selectedOpt ? selectedOpt.textContent.trim() : 'Malayalam Radio';
     const name = st ? st.name : (rawName || 'Malayalam Radio');
     const favicon = st ? st.favicon : '';
-    this.updateNowPlayingInfo('LIVE RADIO', name, (this.currentLanguage === 'ml') ? 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്' : 'Live Malayalam Broadcast', favicon);
+    this.updateNowPlayingInfo('LIVE RADIO', name, 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്', favicon);
     this._updateTuningNeedle();
   }
 
@@ -100,8 +125,11 @@ class App {
     // 2. Saved Radio Volume
     const savedRadioVol = localStorage.getItem('chaya_kada_radio_volume');
     if (savedRadioVol !== null && this.elements.radioVolume) {
-      this.elements.radioVolume.value = savedRadioVol;
-      window.audioEngine.setRadioVolume(savedRadioVol);
+      const volNum = parseFloat(savedRadioVol);
+      if (volNum > 0) this.lastUnmutedVolume = volNum;
+      this.setRadioVolumeLevel(volNum);
+    } else if (this.elements.radioVolume) {
+      this.setRadioVolumeLevel(this.elements.radioVolume.value);
     }
 
     // 3. Keep Master Ambience locked at maximum 1.0
@@ -109,19 +137,59 @@ class App {
       window.audioEngine.setMasterAmbientVolume(1.0);
     }
 
-    // 4. Ambient Channels: Always reset to 0 (OFF) by default on every reload
+    // 4. Ambient Channels: Always clear ambient card selection on every page reload
     localStorage.removeItem('chaya_kada_ambient_levels');
     document.querySelectorAll('.sound-volume').forEach(slider => {
       const sound = slider.dataset.sound;
       slider.value = 0;
       this._updateChannelDisplay(sound, 0);
-      window.audioEngine.setChannelVolume(sound, 0);
+      if (window.audioEngine) {
+        window.audioEngine.setChannelVolume(sound, 0);
+      }
     });
   }
 
-  // Do not remember last setup in case of Ambience sounds
   saveAmbientLevels() {
+    // Ambient selections are not persisted across reloads as requested
     localStorage.removeItem('chaya_kada_ambient_levels');
+  }
+
+  _updateChannelDisplay(sound, vol) {
+    const card = document.querySelector(`.sc[data-sound="${sound}"]`);
+    if (!card) return;
+
+    const val = Math.max(0, Math.min(1, parseFloat(vol || 0)));
+    const pct = Math.round(val * 100);
+
+    const statusEl = card.querySelector('.sound-status');
+    if (statusEl) {
+      statusEl.textContent = `${pct}%`;
+    }
+
+    const tagEl = card.querySelector('.sc-status-tag');
+    if (val > 0) {
+      card.classList.add('active');
+      if (tagEl) {
+        tagEl.textContent = 'ON';
+        tagEl.classList.add('active');
+      }
+    } else {
+      card.classList.remove('active');
+      if (tagEl) {
+        tagEl.textContent = 'OFF';
+        tagEl.classList.remove('active');
+      }
+    }
+
+    const bars = card.querySelectorAll('.sc-graph-bar');
+    const fillCount = Math.ceil(val * bars.length);
+    bars.forEach((bar, idx) => {
+      if (idx < fillCount) {
+        bar.classList.add('filled');
+      } else {
+        bar.classList.remove('filled');
+      }
+    });
   }
 
   // Fetch real-time active Malayalam stations from Radio-Browser API and apply saved station order
@@ -192,22 +260,10 @@ class App {
       });
       select.appendChild(optGroupApi);
 
-      // Custom user radios
-      const customRadios = this.customUserItems.filter(i => i.type === 'radio');
-      if (customRadios.length > 0) {
-        const optGroupCustom = document.createElement('optgroup');
-        optGroupCustom.label = "നിങ്ങളുടെ റേഡിയോകൾ (Custom)";
-        customRadios.forEach(cr => {
-          const opt = document.createElement('option');
-          opt.value = cr.url;
-          opt.textContent = cr.title;
-          optGroupCustom.appendChild(opt);
-        });
-        select.appendChild(optGroupCustom);
-      }
+      
 
       if (!localStorage.getItem('chaya_kada_last_station')) {
-        this.updateNowPlayingInfo('LIVE RADIO', this.radioStations[0].name, (this.currentLanguage === 'ml') ? 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്' : 'Malayalam Live Streaming');
+        this.updateNowPlayingInfo('LIVE RADIO', this.radioStations[0].name, 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്');
       }
     } else {
       select.innerHTML = '<option value="">റേഡിയോ ലഭ്യമല്ല (ചെക്ക് കണക്ഷൻ)</option>';
@@ -215,24 +271,13 @@ class App {
   }
 
   _setupEventListeners() {
-    // Language Toggle
-    this.elements.langToggleBtn.addEventListener('click', () => {
-      this.toggleLanguage();
-    });
 
     // Radio Play/Pause Controls
-    this.elements.playPauseRadioBtn.addEventListener('click', async () => {
-      await window.audioEngine.ensureContextRunning();
-
-      if (window.audioEngine.isPlayingRadio || window.audioEngine.isLoadingRadio) {
-        window.audioEngine.pauseRadio();
-      } else {
-        const url = this.elements.stationSelect.value;
-        if (!url) return;
-        this._displayStationDetails(url);
-        window.audioEngine.playRadio(url);
-      }
-    });
+    if (this.elements.playPauseRadioBtn) {
+      this.elements.playPauseRadioBtn.addEventListener('click', () => {
+        this.togglePlayPauseRadio();
+      });
+    }
 
     this.elements.stationSelect.addEventListener('change', async () => {
       const url = this.elements.stationSelect.value;
@@ -247,13 +292,53 @@ class App {
     });
 
     this.elements.radioVolume.addEventListener('input', (e) => {
-      window.audioEngine.setRadioVolume(e.target.value);
-      localStorage.setItem('chaya_kada_radio_volume', e.target.value);
+      this.setRadioVolumeLevel(e.target.value);
     });
+
+    // Volume Knob Interaction (Click to Mute/Unmute, Scroll to adjust volume)
+    if (this.elements.volKnobVisual && this.elements.radioVolume) {
+      this.elements.volKnobVisual.addEventListener('click', () => {
+        let currentVol = parseFloat(this.elements.radioVolume.value || 0);
+        if (currentVol > 0) {
+          this.setRadioVolumeLevel(0);
+        } else {
+          let restoreVol = (this.lastUnmutedVolume && this.lastUnmutedVolume > 0) ? this.lastUnmutedVolume : 0.8;
+          this.setRadioVolumeLevel(restoreVol);
+        }
+      });
+
+      this.elements.volKnobVisual.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        let currentVol = parseFloat(this.elements.radioVolume.value || 0);
+        let step = 0.05;
+        let newVol = currentVol + (e.deltaY < 0 ? step : -step);
+        newVol = Math.max(0, Math.min(1, Math.round(newVol * 100) / 100));
+        this.setRadioVolumeLevel(newVol);
+      }, { passive: false });
+    }
+
+    // Tuning Knob Interaction (Click to Play/Pause, Scroll to change station)
+    if (this.elements.tuneKnobVisual) {
+      this.elements.tuneKnobVisual.addEventListener('click', () => {
+        this.togglePlayPauseRadio();
+      });
+
+      this.elements.tuneKnobVisual.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const select = this.elements.stationSelect;
+        if (select.options.length <= 1) return;
+        let newIdx = select.selectedIndex + (e.deltaY > 0 ? 1 : -1);
+        if (newIdx < 0) newIdx = select.options.length - 1;
+        if (newIdx >= select.options.length) newIdx = 0;
+        select.selectedIndex = newIdx;
+        select.dispatchEvent(new Event('change'));
+      }, { passive: false });
+    }
 
     // Ambient Sound Volume Sliders
     document.querySelectorAll('.sound-volume').forEach(slider => {
-      slider.addEventListener('input', (e) => {
+      slider.addEventListener('input', async (e) => {
+        await window.audioEngine.ensureContextRunning();
         const sound = e.target.dataset.sound;
         const val = parseFloat(e.target.value);
         this._updateChannelDisplay(sound, val);
@@ -264,8 +349,9 @@ class App {
 
     // Ambient Card Click - Toggle card volume on/off
     document.querySelectorAll('.sc.ambient-channel').forEach(card => {
-      card.addEventListener('click', (e) => {
+      card.addEventListener('click', async (e) => {
         if (e.target.tagName === 'INPUT') return;
+        await window.audioEngine.ensureContextRunning();
         const sound = card.dataset.sound;
         const slider = card.querySelector('.sound-volume');
         if (!slider) return;
@@ -278,73 +364,18 @@ class App {
         this.saveAmbientLevels();
       });
     });
-
-    // Admin Panel Modal Events
-    this.elements.adminModalBtn.addEventListener('click', () => {
-      this.openAdminModal();
-    });
-    this.elements.closeModalBtn.addEventListener('click', () => {
-      this.closeAdminModal();
-    });
-    this.elements.cancelModalBtn.addEventListener('click', () => {
-      this.closeAdminModal();
-    });
-
-    // Admin Tabs
-    this.elements.adminTabRadios.addEventListener('click', () => {
-      this.switchAdminTab('radios');
-    });
-    this.elements.adminTabCustom.addEventListener('click', () => {
-      this.switchAdminTab('custom');
-    });
-
-    // Save Handlers
-    this.elements.saveCustomBtn.addEventListener('click', () => {
-      this.saveCustomItem();
-    });
-    this.elements.saveRadioOrderBtn.addEventListener('click', () => {
-      this.saveAdminRadioOrder();
-    });
   }
 
-  // Update Ambient Card Display (Active State based on Volume > 0)
-  _updateChannelDisplay(sound, vol) {
-    const card = document.querySelector(`.sc[data-sound="${sound}"]`);
-    if (!card) return;
+  async togglePlayPauseRadio() {
+    await window.audioEngine.ensureContextRunning();
 
-    const numVol = parseFloat(vol) || 0;
-    const isActive = (numVol > 0);
-    const pct = Math.round(numVol * 100);
-
-    // 1. Card Container Classes
-    card.classList.toggle('active', isActive);
-
-    // 2. Volume Value Text & Status Tag
-    const valText = card.querySelector('.sound-status');
-    if (valText) valText.textContent = `${pct}%`;
-
-    const tag = card.querySelector('.sc-status-tag');
-    if (tag) {
-      tag.textContent = isActive ? 'ON' : 'OFF';
-      tag.classList.toggle('active', isActive);
-    }
-
-    // 3. Mini Visualizer Bars (20 bars total)
-    const bars = card.querySelectorAll('.sc-graph-bar');
-    const filledCount = isActive ? Math.round(numVol * bars.length) : 0;
-    bars.forEach((bar, idx) => {
-      if (idx < filledCount) {
-        bar.classList.add('filled');
-      } else {
-        bar.classList.remove('filled');
-      }
-    });
-
-    // 4. Slider Background Fill
-    const slider = card.querySelector('.vol-slider');
-    if (slider) {
-      const activeColor = 'rgba(115, 112, 160, 0.75)';
-      slider.style.background = `linear-gradient(to right, ${activeColor} 0%, ${activeColor} ${pct}%, rgba(38, 36, 60, 0.4) ${pct}%, rgba(38, 36, 60, 0.4) 100%)`;
+    if (window.audioEngine.isPlayingRadio || window.audioEngine.isLoadingRadio) {
+      window.audioEngine.pauseRadio();
+    } else {
+      const url = this.elements.stationSelect ? this.elements.stationSelect.value : '';
+      if (!url) return;
+      this._displayStationDetails(url);
+      window.audioEngine.playRadio(url);
     }
   }
 
@@ -365,27 +396,50 @@ class App {
       }
     }
 
-    if (isLoading) {
-      this.elements.playIcon.className = 'fa-solid fa-spinner fa-spin';
-      this.elements.nowPlayingSubtitle.textContent = (this.currentLanguage === 'ml') ? 'കണക്ട് ചെയ്യുന്നു...' : 'Connecting to Live Stream...';
-    } else if (isPlaying) {
-      this.elements.playIcon.className = 'fa-solid fa-pause';
-      this.elements.nowPlayingSubtitle.textContent = (this.currentLanguage === 'ml') ? 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്' : 'Live Malayalam Broadcast';
-    } else if (isError) {
-      this.elements.playIcon.className = 'fa-solid fa-play';
-      this.elements.nowPlayingSubtitle.textContent = (this.currentLanguage === 'ml') ? 'കണക്ഷൻ തടസ്സപ്പെട്ടു' : 'Stream Unavailable';
-    } else {
-      this.elements.playIcon.className = 'fa-solid fa-play';
-      this.elements.nowPlayingSubtitle.textContent = (this.currentLanguage === 'ml') ? 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്' : 'Malayalam Live Streaming';
+    if (this.elements.stationSelect) {
+      if (isLoading) {
+        this.elements.stationSelect.classList.add('is-loading');
+        this.elements.stationSelect.classList.remove('is-streaming');
+      } else if (isPlaying) {
+        this.elements.stationSelect.classList.add('is-streaming');
+        this.elements.stationSelect.classList.remove('is-loading');
+      } else {
+        this.elements.stationSelect.classList.remove('is-streaming', 'is-loading');
+      }
+    }
+
+    if (this.elements.tuneKnobVisual) {
+      if (isLoading) {
+        this.elements.tuneKnobVisual.classList.add('loading');
+        this.elements.tuneKnobVisual.classList.remove('is-streaming');
+      } else if (isPlaying) {
+        this.elements.tuneKnobVisual.classList.add('is-streaming');
+        this.elements.tuneKnobVisual.classList.remove('loading');
+      } else {
+        this.elements.tuneKnobVisual.classList.remove('is-streaming', 'loading');
+      }
+    }
+
+    this._updateVolumeKnobGlow();
+
+    if (this.elements.nowPlayingSubtitle) {
+      if (isLoading) {
+        this.elements.nowPlayingSubtitle.textContent = 'കണക്ട് ചെയ്യുന്നു...';
+      } else if (isPlaying) {
+        this.elements.nowPlayingSubtitle.textContent = 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്';
+      } else if (isError) {
+        this.elements.nowPlayingSubtitle.textContent = 'കണക്ഷൻ തടസ്സപ്പെട്ടു';
+      } else {
+        this.elements.nowPlayingSubtitle.textContent = 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്';
+      }
     }
   }
 
   updateNowPlayingInfo(tag, title, subtitle, favicon = '') {
-    this.elements.sourceTag.textContent = tag;
-    this.elements.nowPlayingTitle.textContent = title;
-    this.elements.nowPlayingSubtitle.textContent = subtitle;
+    if (this.elements.sourceTag) this.elements.sourceTag.textContent = tag;
+    if (this.elements.nowPlayingTitle) this.elements.nowPlayingTitle.textContent = title;
+    if (this.elements.nowPlayingSubtitle) this.elements.nowPlayingSubtitle.textContent = subtitle;
 
-    // Favicon / Station Logo Artwork
     if (this.elements.stationFavicon) {
       if (favicon && favicon.trim() !== '') {
         this.elements.stationFavicon.src = favicon;
@@ -400,118 +454,6 @@ class App {
         if (this.elements.stationFallbackIcon) this.elements.stationFallbackIcon.classList.remove('hidden');
       }
     }
-  }
-
-  saveCustomItem() {
-    const titleInput = document.getElementById('customTitleInput');
-    const urlInput = document.getElementById('customUrlInput');
-    if (!titleInput || !urlInput) return;
-
-    const title = titleInput.value.trim();
-    const url = urlInput.value.trim();
-
-    if (!title || !url) {
-      alert(this.currentLanguage === 'ml' ? 'ദയവായി പേരും ലിങ്കും നൽകുക.' : 'Please enter title and URL.');
-      return;
-    }
-
-    this.customUserItems.push({ type: 'radio', title, url });
-    localStorage.setItem('chaya_kada_custom_items', JSON.stringify(this.customUserItems));
-    
-    titleInput.value = '';
-    urlInput.value = '';
-
-    this.populateStationSelect();
-    this.closeAdminModal();
-    alert(this.currentLanguage === 'ml' ? 'സ്റ്റേഷൻ വിജയികരമായി ചേർത്തു!' : 'Custom Radio Station saved!');
-  }
-
-  openAdminModal() {
-    this.elements.adminModal.classList.remove('hidden');
-    this.renderAdminStationList();
-  }
-
-  closeAdminModal() {
-    this.elements.adminModal.classList.add('hidden');
-  }
-
-  switchAdminTab(tab) {
-    if (tab === 'radios') {
-      this.elements.adminTabRadios.classList.add('active');
-      this.elements.adminTabCustom.classList.remove('active');
-      this.elements.adminRadiosPanel.classList.remove('hidden');
-      this.elements.adminCustomPanel.classList.add('hidden');
-    } else {
-      this.elements.adminTabCustom.classList.add('active');
-      this.elements.adminTabRadios.classList.remove('active');
-      this.elements.adminCustomPanel.classList.remove('hidden');
-      this.elements.adminRadiosPanel.classList.add('hidden');
-    }
-  }
-
-  renderAdminStationList() {
-    const container = this.elements.adminStationListContainer;
-    container.innerHTML = '';
-
-    this.radioStations.forEach((st, idx) => {
-      const item = document.createElement('div');
-      item.className = 'admin-station-item';
-      item.dataset.index = idx;
-
-      item.innerHTML = `
-        <div class="station-reorder-btns">
-          <button class="reorder-btn move-up" ${idx === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up"></i></button>
-          <button class="reorder-btn move-down" ${idx === this.radioStations.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down"></i></button>
-        </div>
-        <input type="text" class="station-title-input" value="${st.name}">
-        <button class="delete-station-btn" title="Remove Station"><i class="fa-solid fa-trash-can"></i></button>
-      `;
-
-      item.querySelector('.move-up').addEventListener('click', () => this.reorderStation(idx, -1));
-      item.querySelector('.move-down').addEventListener('click', () => this.reorderStation(idx, 1));
-      item.querySelector('.delete-station-btn').addEventListener('click', () => this.deleteStation(idx));
-      item.querySelector('.station-title-input').addEventListener('change', (e) => {
-        this.radioStations[idx].name = e.target.value.trim();
-      });
-
-      container.appendChild(item);
-    });
-  }
-
-  reorderStation(index, direction) {
-    const targetIdx = index + direction;
-    if (targetIdx < 0 || targetIdx >= this.radioStations.length) return;
-    const temp = this.radioStations[index];
-    this.radioStations[index] = this.radioStations[targetIdx];
-    this.radioStations[targetIdx] = temp;
-    this.renderAdminStationList();
-  }
-
-  deleteStation(index) {
-    if (confirm(this.currentLanguage === 'ml' ? 'ഈ സ്റ്റേഷൻ നീക്കം ചെയ്യണോ?' : 'Remove this station?')) {
-      this.radioStations.splice(index, 1);
-      this.renderAdminStationList();
-    }
-  }
-
-  saveAdminRadioOrder() {
-    this.saveRadioStations();
-    this.populateStationSelect();
-    this.closeAdminModal();
-    alert(this.currentLanguage === 'ml' ? 'റേഡിയോ ക്രമീകരണം സേവ് ചെയ്തു!' : 'Station order saved!');
-  }
-
-  toggleLanguage() {
-    this.currentLanguage = (this.currentLanguage === 'ml') ? 'en' : 'ml';
-    localStorage.setItem('chaya_kada_lang', this.currentLanguage);
-    this.elements.langText.textContent = (this.currentLanguage === 'ml') ? 'EN' : 'ML';
-
-    document.querySelectorAll('.lang-ml').forEach(el => {
-      el.classList.toggle('hidden', this.currentLanguage !== 'ml');
-    });
-    document.querySelectorAll('.lang-en').forEach(el => {
-      el.classList.toggle('hidden', this.currentLanguage !== 'en');
-    });
   }
 
   /* ==========================================================================

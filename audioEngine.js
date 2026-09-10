@@ -40,7 +40,7 @@ class AudioEngine {
       waves: 'sounds/waves.ogg'
     };
 
-    // Ambient Channels State (All 0 by default on every reload)
+    // Ambient Channels State
     this.channels = {
       rain: { volume: 0, muted: false, sourceNode: null, gainNode: null, synthGainNode: null },
       wind: { volume: 0, muted: false, sourceNode: null, gainNode: null, synthGainNode: null },
@@ -55,6 +55,15 @@ class AudioEngine {
       train: { volume: 0, muted: false, sourceNode: null, gainNode: null, synthGainNode: null },
       waves: { volume: 0, muted: false, sourceNode: null, gainNode: null, synthGainNode: null }
     };
+
+    // Instantiate HTML5 Audio elements for instant, reliable ambient loop playback
+    this.audioElements = {};
+    for (const [key, path] of Object.entries(this.hdSoundFiles)) {
+      const audio = new Audio(path);
+      audio.loop = true;
+      audio.volume = 0;
+      this.audioElements[key] = audio;
+    }
 
     this.isPlayingRadio = false;
     this.isLoadingRadio = false;
@@ -96,43 +105,46 @@ class AudioEngine {
   // Initialize Web Audio Context on first user interaction
   async init() {
     if (this.isInitialized) return;
-
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    this.ctx = new AudioCtx();
-
-    // Master Output & Analyser
-    this.masterGain = this.ctx.createGain();
-    this.masterGain.gain.value = 1.0;
-
-    this.masterAmbientGain = this.ctx.createGain();
-    this.masterAmbientGain.gain.value = this.isStreamingActive ? 1.0 : 0;
-    this.masterAmbientGain.connect(this.masterGain);
-
-    this.masterRadioGain = this.ctx.createGain();
-    this.masterRadioGain.gain.value = 0.95;
-    this.masterRadioGain.connect(this.masterGain);
-
-    this.analyser = this.ctx.createAnalyser();
-    this.analyser.fftSize = 64;
-    this.masterGain.connect(this.analyser);
-    this.analyser.connect(this.ctx.destination);
-
-    // Route Radio Audio Stream safely
-    try {
-      const radioSource = this.ctx.createMediaElementSource(this.radioAudio);
-      this.radioGainNode = this.ctx.createGain();
-      this.radioGainNode.gain.value = 0.9;
-      radioSource.connect(this.radioGainNode);
-      this.radioGainNode.connect(this.masterRadioGain);
-    } catch (e) {
-      console.warn("Direct HTML5 audio stream output fallback:", e);
-    }
-
-    // Load HD Ambient Sound Buffers
-    await this._loadAllHDBuffers();
-    this._initProceduralSynths();
-
     this.isInitialized = true;
+
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+
+      // Master Output & Analyser
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.value = 1.0;
+
+      this.masterAmbientGain = this.ctx.createGain();
+      this.masterAmbientGain.gain.value = 1.0;
+      this.masterAmbientGain.connect(this.masterGain);
+
+      this.masterRadioGain = this.ctx.createGain();
+      this.masterRadioGain.gain.value = 0.95;
+      this.masterRadioGain.connect(this.masterGain);
+
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 64;
+      this.masterGain.connect(this.analyser);
+      this.analyser.connect(this.ctx.destination);
+
+      // Route Radio Audio Stream safely
+      try {
+        const radioSource = this.ctx.createMediaElementSource(this.radioAudio);
+        this.radioGainNode = this.ctx.createGain();
+        this.radioGainNode.gain.value = 0.9;
+        radioSource.connect(this.radioGainNode);
+        this.radioGainNode.connect(this.masterRadioGain);
+      } catch (e) {
+        console.warn("Direct HTML5 audio stream output fallback:", e);
+      }
+
+      // Load HD Ambient Sound Buffers asynchronously
+      this._loadAllHDBuffers().catch(err => console.warn("HD sound buffers load warning:", err));
+      this._initProceduralSynths();
+    } catch (e) {
+      console.warn("AudioContext init warning:", e);
+    }
   }
 
   async ensureContextRunning() {
@@ -140,7 +152,19 @@ class AudioEngine {
       await this.init();
     }
     if (this.ctx && this.ctx.state === 'suspended') {
-      await this.ctx.resume();
+      try {
+        await this.ctx.resume();
+      } catch (e) {
+        console.warn("Context resume error:", e);
+      }
+    }
+    for (const [key, ch] of Object.entries(this.channels)) {
+      if (ch.volume > 0 && !ch.muted) {
+        const audio = this.audioElements[key];
+        if (audio && audio.paused) {
+          audio.play().catch(() => {});
+        }
+      }
     }
   }
 
@@ -281,14 +305,15 @@ class AudioEngine {
 
   _updateMasterAmbientGain() {
     if (!this.masterAmbientGain || !this.ctx) return;
-    const targetVol = this.isStreamingActive ? 1.0 : 0;
+    const targetVol = 1.0;
     this.masterAmbientGain.gain.setTargetAtTime(targetVol, this.ctx.currentTime, 0.1);
   }
 
   // Individual Sound Volume & Mute Controls
   setChannelVolume(sound, vol) {
     if (!this.channels[sound]) return;
-    this.channels[sound].volume = parseFloat(vol);
+    const numVol = Math.max(0, Math.min(1, parseFloat(vol || 0)));
+    this.channels[sound].volume = numVol;
     this._updateChannelGain(sound);
   }
 
@@ -307,18 +332,31 @@ class AudioEngine {
 
   _updateChannelGain(sound) {
     const ch = this.channels[sound];
-    if (!ch || !this.ctx) return;
+    if (!ch) return;
 
     const targetVol = ch.muted ? 0 : ch.volume;
 
-    // 1. HD Blanket Decoded Audio Loop Output
-    if (ch.gainNode) {
+    // 1. Direct HTML5 Audio Loop Control (Instant & 100% reliable)
+    const audio = this.audioElements[sound];
+    if (audio) {
+      audio.volume = targetVol;
+      if (targetVol > 0 && audio.paused) {
+        audio.play().catch(err => {
+          console.warn(`HTML5 audio playback deferred for [${sound}]:`, err);
+        });
+      } else if (targetVol === 0 && !audio.paused) {
+        audio.pause();
+      }
+    }
+
+    // 2. HD Blanket Decoded Audio Loop Output (Web Audio)
+    if (this.ctx && ch.gainNode) {
       const hdTarget = (this.engineMode === 'hd') ? targetVol : 0;
       ch.gainNode.gain.setTargetAtTime(hdTarget, this.ctx.currentTime, 0.05);
     }
 
-    // 2. Procedural Synth Output
-    if (ch.synthGainNode) {
+    // 3. Procedural Synth Output
+    if (this.ctx && ch.synthGainNode) {
       const synthTarget = (this.engineMode === 'synth') ? targetVol : 0;
       ch.synthGainNode.gain.setTargetAtTime(synthTarget, this.ctx.currentTime, 0.05);
     }

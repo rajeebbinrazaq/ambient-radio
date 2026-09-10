@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>കേരള ചായക്കട റേഡിയോ | Kerala Tea Shop Ambient Radio</title>
+  <title>സമോവർ റേഡിയോ</title>
   
   <!-- Google Fonts: Manjari (Malayalam) & Outfit (English) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,25 +31,9 @@
         <span class="steam s3"></span>
       </div>
       <div class="brand-text">
-        <h1 class="lang-ml">കേരള ചായക്കട റേഡിയോ</h1>
-        <h1 class="lang-en hidden">Kerala Chaya Kada Radio</h1>
-        <p class="tagline lang-ml">നാടൻ പാട്ടുകളും മനോഹരമായ മഴയുടെ അന്തരീക്ഷവും</p>
-        <p class="tagline lang-en hidden">Malayalam Live Radio & Nostalgic Monsoon Soundscapes</p>
+        <h1>സമോവർ റേഡിയോ</h1>
+        <p class="tagline">പാട്ടുകൾ പുകയുന്ന ഇടം</p>
       </div>
-    </div>
-
-    <div class="header-actions">
-      <!-- Admin Panel Modal Trigger -->
-      <button id="adminModalBtn" class="btn btn-outline" title="Admin Radio Channel Manager">
-        <i class="fa-solid fa-gear"></i>
-        <span class="lang-ml">അഡ്മിൻ പാനൽ</span>
-        <span class="lang-en hidden">Admin Panel</span>
-      </button>
-
-      <!-- Language Toggle Button -->
-      <button id="langToggleBtn" class="btn btn-icon" title="Switch Language">
-        <span id="langText">EN</span>
-      </button>
     </div>
   </header>
 
@@ -63,7 +47,11 @@
         <div class="radio-top-bezel">
           <div class="radio-brand-badge">
             <i class="fa-solid fa-radio"></i>
-            <span>PANASONICA</span>
+            <span>PANASONIC</span>
+          </div>
+          <div class="top-volume-wrapper" title="Radio Master Volume">
+            <i class="fa-solid fa-volume-high top-vol-icon"></i>
+            <input type="range" id="radioVolume" min="0" max="1" step="0.01" value="0.8" class="top-vol-slider">
           </div>
           <div class="radio-indicator-light" id="radioPowerLed" title="Power Indicator"></div>
         </div>
@@ -128,51 +116,31 @@
         <!-- Bottom Radio Control Panel with Twin Rotary Knobs -->
         <div class="radio-knobs-panel">
           <div class="radio-knob-container">
-            <div class="radio-knob radio-knob-left" id="volKnobVisual">
-              <div class="knob-cap"></div>
-              <div class="knob-notch"></div>
-            </div>
-            <span class="knob-label">VOLUME</span>
-          </div>
-          <div class="radio-speaker-badge">
-            <i class="fa-solid fa-sliders"></i> DUAL SPEAKER STEREO
-          </div>
-          <div class="radio-knob-container">
-            <div class="radio-knob radio-knob-right" id="tuneKnobVisual">
+            <div class="radio-knob radio-knob-left" id="tuneKnobVisual" title="Click to Play / Pause, Scroll to Tune Station">
               <div class="knob-cap"></div>
               <div class="knob-notch"></div>
             </div>
             <span class="knob-label">TUNING</span>
           </div>
-        </div>
-      </div>
 
-      <!-- Radio Player Controls -->
-      <div class="player-controls-card">
-        <div id="radioPanel" class="player-panel">
-          <div class="station-selector-wrapper">
-            <label for="stationSelect" class="input-label">
-              <i class="fa-solid fa-broadcast-tower"></i> 
-              <span class="lang-ml">മലയാളം റേഡിയോ സ്റ്റേഷൻ:</span>
-              <span class="lang-en hidden">Select Malayalam Radio Station:</span>
-            </label>
-            <select id="stationSelect" class="form-select">
-              <option value="">സ്റ്റേഷനുകൾ ലോഡ് ചെയ്യുന്നു...</option>
+          <div class="radio-center-badge-container">
+            <div class="radio-speaker-badge">
+              <i class="fa-solid fa-sliders"></i> DUAL SPEAKER STEREO
+            </div>
+            <select id="stationSelect" class="tuning-select-center" title="Select Radio Station">
+              <option value="">സ്റ്റേഷനുകൾ...</option>
             </select>
           </div>
 
-          <div class="radio-playback-controls">
-            <button id="playPauseRadioBtn" class="btn btn-primary btn-icon-play" title="Play / Pause Radio">
-              <i class="fa-solid fa-play" id="playIcon"></i>
-            </button>
-            <div class="volume-inline">
-              <i class="fa-solid fa-volume-high"></i>
-              <input type="range" id="radioVolume" min="0" max="1" step="0.01" value="0.8" class="brass-slider">
+          <div class="radio-knob-container">
+            <div class="radio-knob radio-knob-right" id="volKnobVisual" title="Click to Mute / Unmute, Scroll to Adjust Volume">
+              <div class="knob-cap"></div>
+              <div class="knob-notch"></div>
             </div>
+            <span class="knob-label">VOLUME</span>
           </div>
         </div>
       </div>
-    </section>
     </section>
 
     <!-- Right Column: Ambient Soundscape Mixer (Chaya Kada Soundscapes) -->
@@ -180,11 +148,9 @@
       <div class="card-header">
         <h2>
           <i class="fa-solid fa-sliders"></i>
-          <span class="lang-ml">ചായക്കട അംബിയൻസ് മിക്സർ</span>
-          <span class="lang-en hidden">Chaya Kada Ambient Mixer</span>
+          <span>ചായക്കട അംബിയൻസ് മിക്സർ</span>
         </h2>
-        <p class="subtitle lang-ml">ഓരോ ശബ്ദവും നിങ്ങളുടെ ഇഷ്ടാനുസരണം ക്രമീകരിക്കാം</p>
-        <p class="subtitle lang-en hidden">Blend studio-grade ambient recordings to create your perfect mood</p>
+        <p class="subtitle">ഓരോ ശബ്ദവും നിങ്ങളുടെ ഇഷ്ടാനുസരണം ക്രമീകരിക്കാം</p>
       </div>
 
       <div class="ambient-grid">
@@ -195,8 +161,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🌧️</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">മഴ</div>
-                <div class="sc-title-en lang-en hidden">Monsoon Rain</div>
+                <div class="sc-title">മഴ</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -245,8 +210,7 @@
             <div class="sc-header">
               <span class="sc-emoji">💨</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">കാറ്റ്</div>
-                <div class="sc-title-en lang-en hidden">Breeze & Wind</div>
+                <div class="sc-title">കാറ്റ്</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -295,8 +259,7 @@
             <div class="sc-header">
               <span class="sc-emoji">⚡</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">ഇടിമിന്നൽ</div>
-                <div class="sc-title-en lang-en hidden">Thunder Rumbles</div>
+                <div class="sc-title">ഇടിമിന്നൽ</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -345,8 +308,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🦗</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">ചീവീടുകൾ / രാത്രി</div>
-                <div class="sc-title-en lang-en hidden">Summer Night Crickets</div>
+                <div class="sc-title">ചീവീടുകൾ</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -395,8 +357,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🗣️</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">ചായക്കട വർത്തമാനം</div>
-                <div class="sc-title-en lang-en hidden">Tea Shop Chatter</div>
+                <div class="sc-title">ചായക്കട</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -445,8 +406,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🔥</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">ചായ അടുപ്പ്</div>
-                <div class="sc-title-en lang-en hidden">Tea Stove Fire</div>
+                <div class="sc-title">അടുപ്പ്</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -495,8 +455,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🐦</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">പക്ഷികളുടെ ശബ്ദം</div>
-                <div class="sc-title-en lang-en hidden">Morning Birds</div>
+                <div class="sc-title">കിളികൾ</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -545,8 +504,7 @@
             <div class="sc-header">
               <span class="sc-emoji">💧</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">അരുവിയുടെ ശബ്ദം</div>
-                <div class="sc-title-en lang-en hidden">Water Stream Flow</div>
+                <div class="sc-title">പുഴയോരം</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -595,8 +553,7 @@
             <div class="sc-header">
               <span class="sc-emoji">⛵</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">വഞ്ചി</div>
-                <div class="sc-title-en lang-en hidden">Rowing Boat</div>
+                <div class="sc-title">വഞ്ചി</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -645,8 +602,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🏙️</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">പൊതുസ്ഥലം</div>
-                <div class="sc-title-en lang-en hidden">City Ambiance</div>
+                <div class="sc-title">അങ്ങാടി</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -695,8 +651,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🚆</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">തീവണ്ടി</div>
-                <div class="sc-title-en lang-en hidden">Train Rhythm</div>
+                <div class="sc-title">തീവണ്ടി</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -745,8 +700,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🌊</span>
               <div class="sc-titles">
-                <div class="sc-title-ml lang-ml">കടലോരം</div>
-                <div class="sc-title-en lang-en hidden">Ocean Waves</div>
+                <div class="sc-title">കടലോരം</div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -791,98 +745,6 @@
     </section>
 
   </main>
-
-  <!-- Full Featured Admin Modal for Managing Radio Stations & Playlists -->
-  <div id="adminModal" class="modal-backdrop hidden">
-    <div class="modal-card admin-modal-wide">
-      <div class="modal-header">
-        <h3>
-          <i class="fa-solid fa-sliders"></i>
-          <span class="lang-ml">അഡ്മിൻ മാനേജ്‌മെന്റ് പാനൽ</span>
-          <span class="lang-en hidden">Admin Radio & Playlist Manager</span>
-        </h3>
-        <button id="closeModalBtn" class="close-btn">&times;</button>
-      </div>
-
-      <!-- Admin Sub-tabs -->
-      <div class="admin-tabs">
-        <button id="adminTabRadios" class="admin-tab-btn active">
-          <i class="fa-solid fa-radio"></i>
-          <span class="lang-ml">റേഡിയോ മാനേജ് ചെയ്യുക</span>
-          <span class="lang-en hidden">Manage Radio Stations</span>
-        </button>
-        <button id="adminTabCustom" class="admin-tab-btn">
-          <i class="fa-solid fa-plus-circle"></i>
-          <span class="lang-ml">പ്ലേലിസ്റ്റ് / സ്ട്രീം ചേർക്കുക</span>
-          <span class="lang-en hidden">Add Playlist / Stream</span>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <!-- 1. Manage Radio Stations Panel -->
-        <div id="adminRadiosPanel" class="admin-panel-content">
-          <p class="admin-intro lang-ml">റേഡിയോ സ്റ്റേഷന്റെ പേര് എഡിറ്റ് ചെയ്യാനും ക്രമം മാറ്റാനും (▲ / ▼) താഴെയുള്ള ഓപ്ഷനുകൾ ഉപയോഗിക്കുക:</p>
-          <p class="admin-intro lang-en hidden">Re-order (▲ / ▼), edit names, or delete radio stations below:</p>
-
-          <div class="admin-station-list" id="adminStationListContainer">
-            <!-- Dynamically populated list of station cards -->
-          </div>
-        </div>
-
-        <!-- 2. Add Custom YouTube / Stream Panel -->
-        <div id="adminCustomPanel" class="admin-panel-content hidden">
-          <div class="form-group">
-            <label class="input-label">
-              <span class="lang-ml">ഇനം തിരഞ്ഞെടുക്കുക (Type)</span>
-              <span class="lang-en hidden">Select Type</span>
-            </label>
-            <select id="customTypeSelect" class="form-select">
-              <option value="youtube">YouTube Playlist or Video URL</option>
-              <option value="radio">Custom Internet Radio Stream URL (.mp3 / .aac / .m3u8)</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="input-label">
-              <span class="lang-ml">പേര് (Title)</span>
-              <span class="lang-en hidden">Title / Station Name</span>
-            </label>
-            <input type="text" id="customTitleInput" placeholder="e.g. Kerala Radio Live" class="form-input">
-          </div>
-
-          <div class="form-group">
-            <label class="input-label">
-              <span class="lang-ml">URL (യൂട്യൂബ് അല്ലെങ്കിൽ റേഡിയോ സ്ട്രീം ലിങ്ക്)</span>
-              <span class="lang-en hidden">URL (YouTube link or Direct Stream URL)</span>
-            </label>
-            <input type="text" id="customUrlInput" placeholder="https://..." class="form-input">
-            <small class="help-text lang-ml">യൂട്യൂബ് പ്ലേലിസ്റ്റ് ലിങ്ക് അല്ലെങ്കിൽ റേഡിയോ സ്ട്രീം ലിങ്ക് ഒട്ടിക്കുക.</small>
-            <small class="help-text lang-en hidden">Paste YouTube playlist, video link, or live radio stream URL.</small>
-          </div>
-
-          <div class="modal-footer-inline">
-            <button id="saveCustomBtn" class="btn btn-primary">
-              <i class="fa-solid fa-check"></i>
-              <span class="lang-ml">സേവ് ചെയ്യുക</span>
-              <span class="lang-en hidden">Save Item</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button id="cancelModalBtn" class="btn btn-secondary">
-          <span class="lang-ml">അടയ്ക്കുക</span>
-          <span class="lang-en hidden">Close</span>
-        </button>
-        <button id="saveRadioOrderBtn" class="btn btn-primary">
-          <i class="fa-solid fa-floppy-disk"></i>
-          <span class="lang-ml">മാറ്റങ്ങൾ സേവ് ചെയ്യുക</span>
-          <span class="lang-en hidden">Save Station Order</span>
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- HLS Library for .m3u8 streams -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
