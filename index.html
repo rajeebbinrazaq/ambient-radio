@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>കേരള ചായക്കട റേഡിയോ | Kerala Tea Shop Ambient Radio</title>
+  
+  <!-- Google Fonts: Manjari (Malayalam) & Outfit (English) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="theme-monsoon">
+  <!-- Background Canvas for Raindrops & Atmosphere -->
+  <canvas id="rainCanvas"></canvas>
+  <div class="vintage-overlay"></div>
+
+  <!-- Header Banner -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="tea-cup-icon">
+        <i class="fa-solid fa-mug-hot"></i>
+        <span class="steam s1"></span>
+        <span class="steam s2"></span>
+        <span class="steam s3"></span>
+      </div>
+      <div class="brand-text">
+        <h1 class="lang-ml">കേരള ചായക്കട റേഡിയോ</h1>
+        <h1 class="lang-en hidden">Kerala Chaya Kada Radio</h1>
+        <p class="tagline lang-ml">നാടൻ പാട്ടുകളും മനോഹരമായ മഴയുടെ അന്തരീക്ഷവും</p>
+        <p class="tagline lang-en hidden">Malayalam Live Radio & Nostalgic Monsoon Soundscapes</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Admin Panel Modal Trigger -->
+      <button id="adminModalBtn" class="btn btn-outline" title="Admin Radio Channel Manager">
+        <i class="fa-solid fa-gear"></i>
+        <span class="lang-ml">അഡ്മിൻ പാനൽ</span>
+        <span class="lang-en hidden">Admin Panel</span>
+      </button>
+
+      <!-- Language Toggle Button -->
+      <button id="langToggleBtn" class="btn btn-icon" title="Switch Language">
+        <span id="langText">EN</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-layout">
+
+    <!-- Left Column: Tea Shop Visual Scene & Now Playing -->
+    <section class="scene-card">
+      <div class="radio-cabinet">
+        <!-- Vintage Top Radio Bezel & Power LED -->
+        <div class="radio-top-bezel">
+          <div class="radio-brand-badge">
+            <i class="fa-solid fa-radio"></i>
+            <span>PANASONIC</span>
+          </div>
+          <div class="radio-indicator-light" id="radioPowerLed" title="Power Indicator"></div>
+        </div>
+
+        <!-- Analog Frequency Tuning Dial Window -->
+        <div class="radio-tuning-dial">
+          <div class="tuning-glass">
+            <div class="freq-band fm-band">
+              <span class="band-name">FM</span>
+              <div class="freq-ticks">
+                <span>88</span><span>92</span><span>96</span><span>100</span><span>104</span><span>108</span><span>MHz</span>
+              </div>
+            </div>
+            <div class="freq-band am-band">
+              <span class="band-name">MW</span>
+              <div class="freq-ticks">
+                <span>530</span><span>700</span><span>900</span><span>1200</span><span>1600</span><span>kHz</span>
+              </div>
+            </div>
+            <!-- Glowing Amber/Slate Tuning Needle Pointer -->
+            <div class="tuning-needle" id="tuningNeedle"></div>
+          </div>
+        </div>
+
+        <!-- Central Radio Speaker & Visual Scene Window -->
+        <div class="scene-frame">
+          <!-- Visualizer Canvas -->
+          <canvas id="visualizerCanvas"></canvas>
+          
+          <!-- Speaker Grille Slats Overlay -->
+          <div class="speaker-grille-overlay">
+            <span class="grille-slat"></span>
+            <span class="grille-slat"></span>
+            <span class="grille-slat"></span>
+            <span class="grille-slat"></span>
+          </div>
+
+          <!-- Tea Shop Illustration / Animation Overlay -->
+          <div class="tea-shop-art">
+            <div class="window-pane">
+              <div class="rain-drops-overlay"></div>
+              <div class="coconut-trees"></div>
+            </div>
+            <div class="tea-table">
+              <div class="glass-tea">
+                <div class="tea-liquid"></div>
+                <div class="tea-foam"></div>
+                <div class="tea-steam-container">
+                  <div class="tea-steam ts1"></div>
+                  <div class="tea-steam ts2"></div>
+                  <div class="tea-steam ts3"></div>
+                </div>
+              </div>
+              <div class="kerala-newspaper">
+                <span>മലയാള മനോരമ</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Now Playing Information Badge -->
+          <div class="now-playing-badge">
+            <div class="station-avatar" id="stationAvatarContainer">
+              <img id="stationFavicon" class="station-favicon hidden" src="" alt="Station Art">
+              <div id="stationFallbackIcon" class="station-fallback-icon"><i class="fa-solid fa-radio"></i></div>
+            </div>
+            <div class="track-details">
+              <div class="meta-row">
+                <span class="source-tag" id="sourceTag">LIVE RADIO</span>
+              </div>
+              <h2 id="nowPlayingTitle" class="track-title">മലയാളം റേഡിയോകൾ...</h2>
+              <p id="nowPlayingSubtitle" class="track-sub">മലയാളം ലൈവ് സ്ട്രീമിംഗ്</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Radio Control Panel with Twin Rotary Knobs -->
+        <div class="radio-knobs-panel">
+          <div class="radio-knob-container">
+            <div class="radio-knob radio-knob-left" id="volKnobVisual">
+              <div class="knob-cap"></div>
+              <div class="knob-notch"></div>
+            </div>
+            <span class="knob-label">VOLUME</span>
+          </div>
+          <div class="radio-speaker-badge">
+            <i class="fa-solid fa-sliders"></i> DUAL SPEAKER STEREO
+          </div>
+          <div class="radio-knob-container">
+            <div class="radio-knob radio-knob-right" id="tuneKnobVisual">
+              <div class="knob-cap"></div>
+              <div class="knob-notch"></div>
+            </div>
+            <span class="knob-label">TUNING</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Radio Player Controls -->
+      <div class="player-controls-card">
+        <div id="radioPanel" class="player-panel">
+          <div class="station-selector-wrapper">
+            <label for="stationSelect" class="input-label">
+              <i class="fa-solid fa-broadcast-tower"></i> 
+              <span class="lang-ml">മലയാളം റേഡിയോ സ്റ്റേഷൻ:</span>
+              <span class="lang-en hidden">Select Malayalam Radio Station:</span>
+            </label>
+            <select id="stationSelect" class="form-select">
+              <option value="">സ്റ്റേഷനുകൾ ലോഡ് ചെയ്യുന്നു...</option>
+            </select>
+          </div>
+
+          <div class="radio-playback-controls">
+            <button id="playPauseRadioBtn" class="btn btn-primary btn-icon-play" title="Play / Pause Radio">
+              <i class="fa-solid fa-play" id="playIcon"></i>
+            </button>
+            <div class="volume-inline">
+              <i class="fa-solid fa-volume-high"></i>
+              <input type="range" id="radioVolume" min="0" max="1" step="0.01" value="0.8" class="brass-slider">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    </section>
+
+    <!-- Right Column: Ambient Soundscape Mixer (Chaya Kada Soundscapes) -->
+    <section class="mixer-card">
+      <div class="card-header">
+        <h2>
+          <i class="fa-solid fa-sliders"></i>
+          <span class="lang-ml">ചായക്കട അംബിയൻസ് മിക്സർ</span>
+          <span class="lang-en hidden">Chaya Kada Ambient Mixer</span>
+        </h2>
+        <p class="subtitle lang-ml">ഓരോ ശബ്ദവും നിങ്ങളുടെ ഇഷ്ടാനുസരണം ക്രമീകരിക്കാം</p>
+        <p class="subtitle lang-en hidden">Blend studio-grade ambient recordings to create your perfect mood</p>
+      </div>
+
+      <div class="ambient-grid">
+        <!-- 1. Rain -->
+        <div class="sc ambient-channel" data-sound="rain">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">🌧️</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">മഴ</div>
+                <div class="sc-title-en lang-en hidden">Monsoon Rain</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 28%;"></div>
+              <div class="sc-graph-bar" style="height: 61%;"></div>
+              <div class="sc-graph-bar" style="height: 80%;"></div>
+              <div class="sc-graph-bar" style="height: 56%;"></div>
+              <div class="sc-graph-bar" style="height: 41%;"></div>
+              <div class="sc-graph-bar" style="height: 23%;"></div>
+              <div class="sc-graph-bar" style="height: 15%;"></div>
+              <div class="sc-graph-bar" style="height: 15%;"></div>
+              <div class="sc-graph-bar" style="height: 34%;"></div>
+              <div class="sc-graph-bar" style="height: 44%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 77%;"></div>
+              <div class="sc-graph-bar" style="height: 43%;"></div>
+              <div class="sc-graph-bar" style="height: 24%;"></div>
+              <div class="sc-graph-bar" style="height: 15%;"></div>
+              <div class="sc-graph-bar" style="height: 15%;"></div>
+              <div class="sc-graph-bar" style="height: 17%;"></div>
+              <div class="sc-graph-bar" style="height: 51%;"></div>
+              <div class="sc-graph-bar" style="height: 57%;"></div>
+              <div class="sc-graph-bar" style="height: 72%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="rain" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Wind -->
+        <div class="sc ambient-channel" data-sound="wind">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">💨</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">കാറ്റ്</div>
+                <div class="sc-title-en lang-en hidden">Breeze & Wind</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 48%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 72%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 18%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 18%;"></div>
+              <div class="sc-graph-bar" style="height: 22%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 68%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="wind" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Thunder -->
+        <div class="sc ambient-channel" data-sound="thunder">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">⚡</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">ഇടിമിന്നൽ</div>
+                <div class="sc-title-en lang-en hidden">Thunder Rumbles</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 15%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 90%;"></div>
+              <div class="sc-graph-bar" style="height: 100%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 15%;"></div>
+              <div class="sc-graph-bar" style="height: 15%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 85%;"></div>
+              <div class="sc-graph-bar" style="height: 95%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 15%;"></div>
+              <div class="sc-graph-bar" style="height: 15%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 80%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="thunder" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Summer Night / Crickets -->
+        <div class="sc ambient-channel" data-sound="crickets">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">🦗</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">ചീവീടുകൾ / രാത്രി</div>
+                <div class="sc-title-en lang-en hidden">Summer Night Crickets</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="crickets" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Tea Shop Chatter -->
+        <div class="sc ambient-channel" data-sound="chatter">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">🗣️</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">ചായക്കട വർത്തമാനം</div>
+                <div class="sc-title-en lang-en hidden">Tea Shop Chatter</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 75%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 75%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="chatter" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Fireplace / Tea Stove -->
+        <div class="sc ambient-channel" data-sound="fireplace">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">🔥</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">ചായ അടുപ്പ്</div>
+                <div class="sc-title-en lang-en hidden">Tea Stove Fire</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 80%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 85%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 80%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="fireplace" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Village Birds -->
+        <div class="sc ambient-channel" data-sound="birds">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">🐦</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">പക്ഷികളുടെ ശബ്ദം</div>
+                <div class="sc-title-en lang-en hidden">Morning Birds</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 75%;"></div>
+              <div class="sc-graph-bar" style="height: 85%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 80%;"></div>
+              <div class="sc-graph-bar" style="height: 90%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 75%;"></div>
+              <div class="sc-graph-bar" style="height: 85%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="birds" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Water Stream -->
+        <div class="sc ambient-channel" data-sound="tea-clink">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">💧</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">അരുവിയുടെ ശബ്ദം</div>
+                <div class="sc-title-en lang-en hidden">Water Stream Flow</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="tea-clink" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. Boat / വഞ്ചി -->
+        <div class="sc ambient-channel" data-sound="boat">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">⛵</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">വഞ്ചി</div>
+                <div class="sc-title-en lang-en hidden">Rowing Boat</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 20%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="boat" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. City / പൊതുസ്ഥലം -->
+        <div class="sc ambient-channel" data-sound="city">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">🏙️</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">പൊതുസ്ഥലം</div>
+                <div class="sc-title-en lang-en hidden">City Ambiance</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 75%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 55%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 75%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 35%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="city" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 11. Train / തീവണ്ടി -->
+        <div class="sc ambient-channel" data-sound="train">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">🚆</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">തീവണ്ടി</div>
+                <div class="sc-title-en lang-en hidden">Train Rhythm</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="train" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12. Ocean Waves / കടലോരം -->
+        <div class="sc ambient-channel" data-sound="waves">
+          <div class="sc-bg-glow"></div>
+          <div class="sc-content">
+            <div class="sc-header">
+              <span class="sc-emoji">🌊</span>
+              <div class="sc-titles">
+                <div class="sc-title-ml lang-ml">കടലോരം</div>
+                <div class="sc-title-en lang-en hidden">Ocean Waves</div>
+              </div>
+              <div class="sc-waves">
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+                <div class="sc-wave-bar"></div>
+              </div>
+            </div>
+            <div class="sc-bar-graph">
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 80%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 85%;"></div>
+              <div class="sc-graph-bar" style="height: 70%;"></div>
+              <div class="sc-graph-bar" style="height: 50%;"></div>
+              <div class="sc-graph-bar" style="height: 30%;"></div>
+              <div class="sc-graph-bar" style="height: 25%;"></div>
+              <div class="sc-graph-bar" style="height: 40%;"></div>
+              <div class="sc-graph-bar" style="height: 60%;"></div>
+              <div class="sc-graph-bar" style="height: 80%;"></div>
+              <div class="sc-graph-bar" style="height: 65%;"></div>
+              <div class="sc-graph-bar" style="height: 45%;"></div>
+            </div>
+            <div class="sc-footer">
+              <input type="range" class="vol-slider sound-volume" data-sound="waves" min="0" max="1" step="0.01" value="0">
+              <div class="sc-status-row">
+                <span class="sc-vol-val sound-status">0%</span>
+                <span class="sc-status-tag">OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Full Featured Admin Modal for Managing Radio Stations & Playlists -->
+  <div id="adminModal" class="modal-backdrop hidden">
+    <div class="modal-card admin-modal-wide">
+      <div class="modal-header">
+        <h3>
+          <i class="fa-solid fa-sliders"></i>
+          <span class="lang-ml">അഡ്മിൻ മാനേജ്‌മെന്റ് പാനൽ</span>
+          <span class="lang-en hidden">Admin Radio & Playlist Manager</span>
+        </h3>
+        <button id="closeModalBtn" class="close-btn">&times;</button>
+      </div>
+
+      <!-- Admin Sub-tabs -->
+      <div class="admin-tabs">
+        <button id="adminTabRadios" class="admin-tab-btn active">
+          <i class="fa-solid fa-radio"></i>
+          <span class="lang-ml">റേഡിയോ മാനേജ് ചെയ്യുക</span>
+          <span class="lang-en hidden">Manage Radio Stations</span>
+        </button>
+        <button id="adminTabCustom" class="admin-tab-btn">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span class="lang-ml">പ്ലേലിസ്റ്റ് / സ്ട്രീം ചേർക്കുക</span>
+          <span class="lang-en hidden">Add Playlist / Stream</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 1. Manage Radio Stations Panel -->
+        <div id="adminRadiosPanel" class="admin-panel-content">
+          <p class="admin-intro lang-ml">റേഡിയോ സ്റ്റേഷന്റെ പേര് എഡിറ്റ് ചെയ്യാനും ക്രമം മാറ്റാനും (▲ / ▼) താഴെയുള്ള ഓപ്ഷനുകൾ ഉപയോഗിക്കുക:</p>
+          <p class="admin-intro lang-en hidden">Re-order (▲ / ▼), edit names, or delete radio stations below:</p>
+
+          <div class="admin-station-list" id="adminStationListContainer">
+            <!-- Dynamically populated list of station cards -->
+          </div>
+        </div>
+
+        <!-- 2. Add Custom YouTube / Stream Panel -->
+        <div id="adminCustomPanel" class="admin-panel-content hidden">
+          <div class="form-group">
+            <label class="input-label">
+              <span class="lang-ml">ഇനം തിരഞ്ഞെടുക്കുക (Type)</span>
+              <span class="lang-en hidden">Select Type</span>
+            </label>
+            <select id="customTypeSelect" class="form-select">
+              <option value="youtube">YouTube Playlist or Video URL</option>
+              <option value="radio">Custom Internet Radio Stream URL (.mp3 / .aac / .m3u8)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">
+              <span class="lang-ml">പേര് (Title)</span>
+              <span class="lang-en hidden">Title / Station Name</span>
+            </label>
+            <input type="text" id="customTitleInput" placeholder="e.g. Kerala Radio Live" class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">
+              <span class="lang-ml">URL (യൂട്യൂബ് അല്ലെങ്കിൽ റേഡിയോ സ്ട്രീം ലിങ്ക്)</span>
+              <span class="lang-en hidden">URL (YouTube link or Direct Stream URL)</span>
+            </label>
+            <input type="text" id="customUrlInput" placeholder="https://..." class="form-input">
+            <small class="help-text lang-ml">യൂട്യൂബ് പ്ലേലിസ്റ്റ് ലിങ്ക് അല്ലെങ്കിൽ റേഡിയോ സ്ട്രീം ലിങ്ക് ഒട്ടിക്കുക.</small>
+            <small class="help-text lang-en hidden">Paste YouTube playlist, video link, or live radio stream URL.</small>
+          </div>
+
+          <div class="modal-footer-inline">
+            <button id="saveCustomBtn" class="btn btn-primary">
+              <i class="fa-solid fa-check"></i>
+              <span class="lang-ml">സേവ് ചെയ്യുക</span>
+              <span class="lang-en hidden">Save Item</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="cancelModalBtn" class="btn btn-secondary">
+          <span class="lang-ml">അടയ്ക്കുക</span>
+          <span class="lang-en hidden">Close</span>
+        </button>
+        <button id="saveRadioOrderBtn" class="btn btn-primary">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span class="lang-ml">മാറ്റങ്ങൾ സേവ് ചെയ്യുക</span>
+          <span class="lang-en hidden">Save Station Order</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HLS Library for .m3u8 streams -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <!-- Audio Engine & Main App -->
+  <script src="audioEngine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
