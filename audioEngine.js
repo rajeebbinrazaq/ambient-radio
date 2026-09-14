@@ -127,16 +127,8 @@ class AudioEngine {
       this.masterGain.connect(this.analyser);
       this.analyser.connect(this.ctx.destination);
 
-      // Route Radio Audio Stream safely
-      try {
-        const radioSource = this.ctx.createMediaElementSource(this.radioAudio);
-        this.radioGainNode = this.ctx.createGain();
-        this.radioGainNode.gain.value = 0.9;
-        radioSource.connect(this.radioGainNode);
-        this.radioGainNode.connect(this.masterRadioGain);
-      } catch (e) {
-        console.warn("Direct HTML5 audio stream output fallback:", e);
-      }
+      // HTML5 radioAudio streams directly to standard browser output to avoid Web Audio API CORS-tainted silencing
+      this.radioAudio.volume = 0.9;
 
       // Load HD Ambient Sound Buffers asynchronously
       this._loadAllHDBuffers().catch(err => console.warn("HD sound buffers load warning:", err));
