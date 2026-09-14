@@ -46,6 +46,16 @@ class App {
   }
 
   _bindDOM() {
+    // Inject percentage labels for all range sliders
+    document.querySelectorAll('input[type="range"]').forEach(slider => {
+      if (!slider.parentElement.querySelector('.vol-percentage')) {
+        const span = document.createElement('span');
+        span.className = 'vol-percentage';
+        span.innerText = Math.round(slider.value * 100) + '%';
+        slider.parentElement.appendChild(span);
+      }
+    });
+
     this.elements = {
       // Controls
       stationSelect: document.getElementById('stationSelect'),
@@ -62,13 +72,22 @@ class App {
       nowPlayingTitle: document.getElementById('nowPlayingTitle'),
       nowPlayingSubtitle: document.getElementById('nowPlayingSubtitle'),
       stationFavicon: document.getElementById('stationFavicon'),
-      stationFallbackIcon: document.getElementById('stationFallbackIcon')
+      stationFallbackIcon: document.getElementById('stationFallbackIcon'),
+      masterAmbientVolume: document.getElementById('masterAmbientVolume')
     };
   }
 
   getStationByUrl(url) {
     if (!url) return null;
     return this.radioStations.find(st => st.url === url) || null;
+  }
+
+  _updateSliderPercentage(slider) {
+    if (!slider || !slider.parentElement) return;
+    const span = slider.parentElement.querySelector('.vol-percentage');
+    if (span) {
+      span.innerText = Math.round(slider.value * 100) + '%';
+    }
   }
 
   _updateTuningNeedle() {
@@ -93,6 +112,7 @@ class App {
     }
     if (this.elements.radioVolume) {
       this.elements.radioVolume.value = val;
+      this._updateSliderPercentage(this.elements.radioVolume);
     }
     if (window.audioEngine) {
       window.audioEngine.setRadioVolume(val);
@@ -163,8 +183,14 @@ class App {
       this.setRadioVolumeLevel(this.elements.radioVolume.value);
     }
 
-    // 3. Keep Master Ambience locked at maximum 1.0
-    if (window.audioEngine) {
+    // 3. Restore Master Ambient Volume
+    const savedAmbientMasterVol = localStorage.getItem('chaya_kada_ambient_master_volume');
+    if (savedAmbientMasterVol !== null && this.elements.masterAmbientVolume) {
+      const volNum = parseFloat(savedAmbientMasterVol);
+      this.elements.masterAmbientVolume.value = volNum;
+      this._updateSliderPercentage(this.elements.masterAmbientVolume);
+      if (window.audioEngine) window.audioEngine.setMasterAmbientVolume(volNum);
+    } else if (window.audioEngine) {
       window.audioEngine.setMasterAmbientVolume(1.0);
     }
 
@@ -229,11 +255,14 @@ class App {
   }
 
   _updatePresetPillsUI() {
-    document.querySelectorAll('.preset-pill').forEach(pill => {
-      if (pill.dataset.preset === this.activePresetKey) {
-        pill.classList.add('active');
+    document.querySelectorAll('.preset-toggle-btn').forEach(btn => {
+      const statusEl = btn.querySelector('.preset-toggle-status');
+      if (btn.dataset.preset === this.activePresetKey) {
+        btn.classList.add('active');
+        if (statusEl) statusEl.textContent = 'ON';
       } else {
-        pill.classList.remove('active');
+        btn.classList.remove('active');
+        if (statusEl) statusEl.textContent = 'OFF';
       }
     });
   }
@@ -272,6 +301,9 @@ class App {
   _updateChannelDisplay(sound, vol) {
     const card = document.querySelector(`.sc[data-sound="${sound}"]`);
     if (!card) return;
+
+    const slider = card.querySelector('.sound-volume');
+    if (slider) this._updateSliderPercentage(slider);
 
     const val = Math.max(0, Math.min(1, parseFloat(vol || 0)));
     const pct = Math.round(val * 100);
@@ -445,6 +477,15 @@ class App {
       this.setRadioVolumeLevel(e.target.value);
     });
 
+    if (this.elements.masterAmbientVolume) {
+      this.elements.masterAmbientVolume.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        this._updateSliderPercentage(this.elements.masterAmbientVolume);
+        if (window.audioEngine) window.audioEngine.setMasterAmbientVolume(val);
+        localStorage.setItem('chaya_kada_ambient_master_volume', val);
+      });
+    }
+
     // Volume Knob Interaction (Click to Mute/Unmute, Scroll to adjust volume)
     if (this.elements.volKnobVisual && this.elements.radioVolume) {
       this.elements.volKnobVisual.addEventListener('click', () => {
@@ -485,11 +526,11 @@ class App {
       }, { passive: false });
     }
 
-    // Preset Pill Buttons Event Listeners
-    document.querySelectorAll('.preset-pill').forEach(pill => {
-      pill.addEventListener('click', (e) => {
-        const key = pill.currentTarget.dataset.preset;
-        this.applyPreset(key);
+    // Preset Toggle Buttons Event Listeners
+    document.querySelectorAll('.preset-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const key = btn.dataset.preset;
+        if (key) this.applyPreset(key);
       });
     });
 

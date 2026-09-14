@@ -295,15 +295,20 @@ class AudioEngine {
     this._updateMasterAmbientGain();
   }
 
-  // Master Ambient Volume Control (Locked at maximum 1.0 when active; cards control individual volume levels)
   setMasterAmbientVolume(vol) {
-    this.masterAmbientVolValue = 1.0;
+    const numVol = Math.max(0, Math.min(1, parseFloat(vol || 0)));
+    this.masterAmbientVolValue = numVol;
     this._updateMasterAmbientGain();
+    
+    // Also update all individual channels because HTML5 audio elements bypass the master Web Audio gain node
+    Object.keys(this.channels).forEach(sound => {
+      this._updateChannelGain(sound);
+    });
   }
 
   _updateMasterAmbientGain() {
     if (!this.masterAmbientGain || !this.ctx) return;
-    const targetVol = 1.0;
+    const targetVol = this.masterAmbientVolValue !== undefined ? this.masterAmbientVolValue : 1.0;
     this.masterAmbientGain.gain.setTargetAtTime(targetVol, this.ctx.currentTime, 0.1);
   }
 
@@ -337,12 +342,14 @@ class AudioEngine {
     // 1. Direct HTML5 Audio Loop Control (Instant & 100% reliable)
     const audio = this.audioElements[sound];
     if (audio) {
-      audio.volume = targetVol;
-      if (targetVol > 0 && audio.paused) {
+      const masterVol = this.masterAmbientVolValue !== undefined ? this.masterAmbientVolValue : 1.0;
+      const html5TargetVol = targetVol * masterVol;
+      audio.volume = html5TargetVol;
+      if (html5TargetVol > 0 && audio.paused) {
         audio.play().catch(err => {
           console.warn(`HTML5 audio playback deferred for [${sound}]:`, err);
         });
-      } else if (targetVol === 0 && !audio.paused) {
+      } else if (html5TargetVol === 0 && !audio.paused) {
         audio.pause();
       }
     }

@@ -141,38 +141,44 @@
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Ambient Sound Combo Presets (Small Pills) -->
-      <div class="preset-pills-wrapper">
-        <div class="preset-pills-header">PRESETS</div>
-        <div class="preset-pills-list" id="presetPillsList">
-          <button class="preset-pill" data-preset="night-rain" title="Rain 40% + Wind 20% + Cricket 15% + Fireplace 10%">
-            <span class="pill-icon">🌧</span>
-            <span class="pill-name">രാത്രി മഴ</span>
-          </button>
-          <button class="preset-pill" data-preset="heavy-rain" title="Rain 40% + Wind 20% + Cricket 15% + Thunder 40%">
-            <span class="pill-icon">⚡</span>
-            <span class="pill-name">പെരുമഴകാലം</span>
-          </button>
-          <button class="preset-pill" data-preset="morning" title="Birds 40% + Wind 5%">
-            <span class="pill-icon">🌅</span>
-            <span class="pill-name">രാവിലെ</span>
-          </button>
-          <button class="preset-pill" data-preset="river-bank" title="Boat 20% + Birds 10%">
-            <span class="pill-icon">🚣</span>
-            <span class="pill-name">പുഴയോരം</span>
-          </button>
-          <button class="preset-pill" data-preset="malabar-express" title="Train 40% + Wind 10%">
-            <span class="pill-icon">🚆</span>
-            <span class="pill-name">മലബാർ എക്സ്പ്രസ്സ്</span>
-          </button>
-          <button class="preset-pill" data-preset="seashore" title="Waves 40% + Teashop 15%">
-            <span class="pill-icon">🌊</span>
-            <span class="pill-name">കടൽതീരം</span>
-          </button>
+    <!-- Ambient Sound Combo Presets (Single Preset Toggle Button) -->
+    <div class="">
+      <div class="preset-section-header">PRESETS</div>
+      <div class="preset-toggles-container" id="presetPillsList">
+        <button class="preset-toggle-btn" data-preset="night-rain" title="Rain (40%) + Wind (20%) + Cricket (15%) + Fireplace (10%)">
+          <span class="preset-emoji">🌧️</span>
+          <span class="preset-name">രാത്രി മഴ</span>
+        </button>
+        <button class="preset-toggle-btn" data-preset="heavy-rain" title="Rain (40%) + Wind (20%) + Cricket (15%) + Thunder (40%)">
+          <span class="preset-emoji">⛈️</span>
+          <span class="preset-name">പെരുമഴകാലം</span>
+        </button>
+        <button class="preset-toggle-btn" data-preset="morning" title="Birds (40%) + Wind (5%)">
+          <span class="preset-emoji">🌅</span>
+          <span class="preset-name">രാവിലെ</span>
+        </button>
+        <button class="preset-toggle-btn" data-preset="river-bank" title="Boat (20%) + Birds (10%)">
+          <span class="preset-emoji">🛶</span>
+          <span class="preset-name">പുഴയോരം</span>
+        </button>
+        <button class="preset-toggle-btn" data-preset="malabar-express" title="Train (40%) + Wind (10%)">
+          <span class="preset-emoji">🚂</span>
+          <span class="preset-name">മലബാർ എക്സ്പ്രസ്സ്</span>
+        </button>
+        <button class="preset-toggle-btn" data-preset="seashore" title="Waves (40%) + Teashop (15%)">
+          <span class="preset-emoji">🌊</span>
+          <span class="preset-name">കടൽതീരം</span>
+        </button>
+
+        <div class="ambient-master-vol" style="margin-left: auto;" title="Master Ambient Volume">
+          <i class="fa-solid fa-volume-low" style="font-size: 10px; opacity: 0.7;"></i>
+          <input type="range" id="masterAmbientVolume" class="ambient-master-slider" min="0" max="1" step="0.01" value="1.0">
+          <i class="fa-solid fa-volume-high" style="font-size: 10px; opacity: 0.7;"></i>
         </div>
       </div>
-    </section>
+    </div>
 
     <!-- Right Column: Ambient Soundscape Mixer (Chaya Kada Soundscapes) -->
     <section class="mixer-card">
