@@ -6,6 +6,33 @@ class App {
   constructor() {
     this.radioStations = [];
     this.lastUnmutedVolume = 0.8;
+    this.activePresetKey = null;
+    this.presets = {
+      'night-rain': {
+        name: 'രാത്രി മഴ',
+        levels: { rain: 0.40, wind: 0.20, crickets: 0.15, fireplace: 0.10 }
+      },
+      'heavy-rain': {
+        name: 'പെരുമഴകാലം',
+        levels: { rain: 0.40, wind: 0.20, crickets: 0.15, thunder: 0.40 }
+      },
+      'morning': {
+        name: 'രാവിലെ',
+        levels: { birds: 0.40, wind: 0.05 }
+      },
+      'river-bank': {
+        name: 'പുഴയോരം',
+        levels: { boat: 0.20, birds: 0.10 }
+      },
+      'malabar-express': {
+        name: 'മലബാർ എക്സ്പ്രസ്സ്',
+        levels: { train: 0.40, wind: 0.10 }
+      },
+      'seashore': {
+        name: 'കടൽതീരം',
+        levels: { waves: 0.40, chatter: 0.15 }
+      }
+    };
   }
 
   async init() {
@@ -143,6 +170,8 @@ class App {
 
     // 4. Ambient Channels: Always clear ambient card selection on every page reload
     localStorage.removeItem('chaya_kada_ambient_levels');
+    this.activePresetKey = null;
+    this._updatePresetPillsUI();
     document.querySelectorAll('.sound-volume').forEach(slider => {
       const sound = slider.dataset.sound;
       slider.value = 0;
@@ -151,6 +180,88 @@ class App {
         window.audioEngine.setChannelVolume(sound, 0);
       }
     });
+  }
+
+  async applyPreset(presetKey) {
+    await window.audioEngine.ensureContextRunning();
+
+    if (this.activePresetKey === presetKey) {
+      // Deselect preset if clicked again
+      this.clearPresetSelection();
+      return;
+    }
+
+    const preset = this.presets[presetKey];
+    if (!preset) return;
+
+    this.activePresetKey = presetKey;
+    this._updatePresetPillsUI();
+
+    const targetLevels = preset.levels || {};
+    const allSliders = document.querySelectorAll('.sound-volume');
+
+    allSliders.forEach(slider => {
+      const sound = slider.dataset.sound;
+      const targetVol = targetLevels[sound] !== undefined ? targetLevels[sound] : 0;
+      slider.value = targetVol;
+      this._updateChannelDisplay(sound, targetVol);
+      if (window.audioEngine) {
+        window.audioEngine.setChannelVolume(sound, targetVol);
+      }
+    });
+
+    this.saveAmbientLevels();
+  }
+
+  clearPresetSelection() {
+    this.activePresetKey = null;
+    this._updatePresetPillsUI();
+    const allSliders = document.querySelectorAll('.sound-volume');
+    allSliders.forEach(slider => {
+      const sound = slider.dataset.sound;
+      slider.value = 0;
+      this._updateChannelDisplay(sound, 0);
+      if (window.audioEngine) {
+        window.audioEngine.setChannelVolume(sound, 0);
+      }
+    });
+    this.saveAmbientLevels();
+  }
+
+  _updatePresetPillsUI() {
+    document.querySelectorAll('.preset-pill').forEach(pill => {
+      if (pill.dataset.preset === this.activePresetKey) {
+        pill.classList.add('active');
+      } else {
+        pill.classList.remove('active');
+      }
+    });
+  }
+
+  _checkOrClearActivePreset() {
+    if (!this.activePresetKey) return;
+    const preset = this.presets[this.activePresetKey];
+    if (!preset) {
+      this.activePresetKey = null;
+      this._updatePresetPillsUI();
+      return;
+    }
+
+    const allSliders = document.querySelectorAll('.sound-volume');
+    let matches = true;
+    allSliders.forEach(slider => {
+      const sound = slider.dataset.sound;
+      const targetVol = preset.levels[sound] !== undefined ? preset.levels[sound] : 0;
+      const currentVol = parseFloat(slider.value || 0);
+      if (Math.abs(currentVol - targetVol) > 0.01) {
+        matches = false;
+      }
+    });
+
+    if (!matches) {
+      this.activePresetKey = null;
+      this._updatePresetPillsUI();
+    }
   }
 
   saveAmbientLevels() {
@@ -374,6 +485,14 @@ class App {
       }, { passive: false });
     }
 
+    // Preset Pill Buttons Event Listeners
+    document.querySelectorAll('.preset-pill').forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        const key = pill.currentTarget.dataset.preset;
+        this.applyPreset(key);
+      });
+    });
+
     // Ambient Sound Volume Sliders
     document.querySelectorAll('.sound-volume').forEach(slider => {
       slider.addEventListener('input', async (e) => {
@@ -382,6 +501,7 @@ class App {
         const val = parseFloat(e.target.value);
         this._updateChannelDisplay(sound, val);
         window.audioEngine.setChannelVolume(sound, val);
+        this._checkOrClearActivePreset();
         this.saveAmbientLevels();
       });
     });
@@ -400,6 +520,7 @@ class App {
         slider.value = newVal;
         this._updateChannelDisplay(sound, newVal);
         window.audioEngine.setChannelVolume(sound, newVal);
+        this._checkOrClearActivePreset();
         this.saveAmbientLevels();
       });
     });
