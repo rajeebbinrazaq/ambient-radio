@@ -116,7 +116,11 @@ class App {
   // Restore saved station, volume, and ambient slider settings silently
   restoreLastSavedSettings() {
     // 1. Saved Radio Station
-    const savedStationUrl = localStorage.getItem('chaya_kada_last_station');
+    let savedStationUrl = localStorage.getItem('chaya_kada_last_station');
+    if (savedStationUrl && savedStationUrl.startsWith('http://')) {
+      savedStationUrl = savedStationUrl.replace(/^http:\/\//i, 'https://');
+      localStorage.setItem('chaya_kada_last_station', savedStationUrl);
+    }
     if (savedStationUrl && this.elements.stationSelect) {
       this.elements.stationSelect.value = savedStationUrl;
       this._displayStationDetails(savedStationUrl);
@@ -192,15 +196,45 @@ class App {
     });
   }
 
+  // Sanitize and upgrade station URLs to HTTPS (preventing Mixed Content blocking on HTTPS hosts like Vercel)
+  _sanitizeStationUrls(stations) {
+    if (!Array.isArray(stations)) return [];
+    const isHttpsHost = window.location.protocol === 'https:';
+
+    return stations
+      .map(st => {
+        let url = (st.url || '').trim();
+        if (url.startsWith('http://')) {
+          url = url.replace(/^http:\/\//i, 'https://');
+        }
+        return {
+          ...st,
+          url: url
+        };
+      })
+      .filter(st => {
+        if (!st.url) return false;
+        // On HTTPS origins (e.g. Vercel), ensure only HTTPS stream URLs are used
+        if (isHttpsHost && !st.url.startsWith('https://')) {
+          return false;
+        }
+        return true;
+      });
+  }
+
   // Fetch real-time active Malayalam stations from Radio-Browser API and apply saved station order
   async fetchMalayalamRadioStations() {
     const savedRadioOrderStr = localStorage.getItem('chaya_kada_radio_stations');
     
     if (savedRadioOrderStr) {
       try {
-        this.radioStations = JSON.parse(savedRadioOrderStr);
-        this.populateStationSelect();
-        return;
+        const parsed = JSON.parse(savedRadioOrderStr);
+        const sanitized = this._sanitizeStationUrls(parsed);
+        if (sanitized && sanitized.length > 0) {
+          this.radioStations = sanitized;
+          this.populateStationSelect();
+          return;
+        }
       } catch (e) {
         console.warn("Saved radio order invalid, fetching fresh...", e);
       }
@@ -211,14 +245,17 @@ class App {
       const data = await response.json();
 
       if (data && data.length > 0) {
-        this.radioStations = data.map(st => ({
+        const mapped = data.map(st => ({
           name: st.name.trim(),
-          url: st.url_resolved || st.url,
+          url: (st.url_resolved || st.url || '').trim(),
           favicon: st.favicon || '',
           codec: st.codec || 'MP3',
           bitrate: st.bitrate || 128
         }));
-      } else {
+        this.radioStations = this._sanitizeStationUrls(mapped);
+      }
+
+      if (!this.radioStations || this.radioStations.length === 0) {
         this.radioStations = this._getDefaultFallbackStations();
       }
     } catch (err) {
@@ -232,11 +269,13 @@ class App {
 
   _getDefaultFallbackStations() {
     return [
-      { name: "AIR Malayalam (ആകാശവാണി)", url: "https://air.realhost.co.in/realhost/airmalayalam/playlist.m3u8", favicon: "" },
-      { name: "Club FM 94.3", url: "https://clubfm.stream/live", favicon: "" },
-      { name: "Radio Mango 91.9", url: "https://radiomango.stream/live", favicon: "" },
-      { name: "Radio Suno 91.7", url: "https://suno.stream/live", favicon: "" },
-      { name: "Radio City Malayalam", url: "https://radiocity.stream/malayalam", favicon: "" }
+      { name: "AIR Malayalam (ആകാശവാണി)", url: "https://air.pc.cdn.bitgravity.com/air/live/pbaudio230/playlist.m3u8", favicon: "" },
+      { name: "Radio Malayalam 98.6 FM", url: "https://stream.zeno.fm/512rbf1e3qzuv", favicon: "" },
+      { name: "London Malayalam Radio", url: "https://ais-edge105-live365-dal02.cdnstream.com/a50671", favicon: "" },
+      { name: "Raagam AIR 24*7", url: "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudioragam/hlspbaudioragam_Auto.m3u8", favicon: "" },
+      { name: "KJ Yesudas Radio", url: "https://stream.zeno.fm/9x1sw687nf9uv", favicon: "" },
+      { name: "Radio Suno 91.7 FM", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/SUNO917_SC", favicon: "" },
+      { name: "Aaha Radio", url: "https://s2.radio.co/s3801784f1/listen", favicon: "" }
     ];
   }
 

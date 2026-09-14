@@ -10,7 +10,6 @@ class AudioEngine {
     
     // Radio HTML5 Audio
     this.radioAudio = new Audio();
-    this.radioAudio.crossOrigin = "anonymous";
     this.radioAudio.volume = 0.9;
     this.hls = null;
     this.radioGainNode = null;
@@ -217,6 +216,13 @@ class AudioEngine {
 
   // Radio Audio Stream Controls - Always loads fresh stream URL for true LIVE broadcast
   playRadio(streamUrl) {
+    if (!streamUrl) return;
+
+    // Auto-upgrade HTTP stream URLs to HTTPS to prevent Mixed Content security blocking on HTTPS origins (like Vercel)
+    if (streamUrl.startsWith('http://')) {
+      streamUrl = streamUrl.replace(/^http:\/\//i, 'https://');
+    }
+
     this.ensureContextRunning();
     
     this.radioAudio.volume = 0.9;
