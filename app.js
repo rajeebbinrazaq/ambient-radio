@@ -166,6 +166,17 @@ class App {
 
   // Restore saved station, volume, and ambient slider settings silently
   restoreLastSavedSettings() {
+    // 0. Saved Theme
+    const savedTheme = localStorage.getItem('chaya_kada_theme');
+    const themeToggleCheckbox = document.getElementById('themeToggleCheckbox');
+    if (savedTheme === 'elink') {
+      document.body.classList.add('theme-elink');
+      if (themeToggleCheckbox) themeToggleCheckbox.checked = true;
+    } else if (savedTheme === 'monsoon') {
+      document.body.classList.remove('theme-elink');
+      if (themeToggleCheckbox) themeToggleCheckbox.checked = false;
+    }
+
     // 1. Saved Radio Station
     let savedStationUrl = localStorage.getItem('chaya_kada_last_station');
     if (savedStationUrl && savedStationUrl.startsWith('http://')) {
@@ -463,7 +474,8 @@ class App {
     const themeToggleCheckbox = document.getElementById('themeToggleCheckbox');
     if (themeToggleCheckbox) {
       themeToggleCheckbox.addEventListener('change', () => {
-        document.body.classList.toggle('theme-elink');
+        const isELink = document.body.classList.toggle('theme-elink');
+        localStorage.setItem('chaya_kada_theme', isELink ? 'elink' : 'monsoon');
         this.populateStationSelect();
         const subtitleHtml = `<span class="ml-text">മലയാളം ലൈവ് സ്ട്രീമിംഗ്</span><span class="en-text">Malayalam Live Streaming</span>`;
         if (this.elements.nowPlayingSubtitle && this.elements.nowPlayingSubtitle.innerHTML.includes('സ്ട്രീമിംഗ്') || this.elements.nowPlayingSubtitle.innerHTML.includes('Streaming')) {
