@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ചായപ്പീടിക</title>
   
-  <!-- Google Fonts: Manjari (Malayalam) & Outfit (English) -->
+  <!-- Google Fonts: Manjari (Malayalam), Outfit (English), & Literata (E-Link) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Anek+Malayalam:wght@100..800&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,8 +31,29 @@
         <span class="steam s3"></span>
       </div>
       <div class="brand-text">
-        <h1>ചായപ്പീടിക</h1>
+        <h1><span class="ml-text">ചായപ്പീടിക</span><span class="en-text">chayapeedika</span></h1>
         <p class="tagline">Serving nostalgia, one station at a time.</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="clock-container">
+        <div id="digitalClock" class="digital-clock"></div>
+        <div id="weatherCondition" class="weather-condition">
+          <span class="ml-text"></span>
+          <span class="en-text"></span>
+        </div>
+        <div id="calendarDate" class="calendar-date">
+          <span class="ml-text"></span>
+          <span class="en-text"></span>
+        </div>
+      </div>
+      <div class="theme-switch-wrapper">
+        <i class="fa-solid fa-cloud-rain theme-icon monsoon-icon" title="Monsoon Theme"></i>
+        <label class="theme-switch" for="themeToggleCheckbox" title="Switch Theme">
+          <input type="checkbox" id="themeToggleCheckbox" />
+          <div class="slider round"></div>
+        </label>
+        <i class="fa-solid fa-book-open theme-icon elink-icon" title="E-Link Theme"></i>
       </div>
     </div>
   </header>
@@ -107,8 +128,8 @@
               <div class="meta-row">
                 <span class="source-tag" id="sourceTag">LIVE RADIO</span>
               </div>
-              <h2 id="nowPlayingTitle" class="track-title">മലയാളം റേഡിയോകൾ...</h2>
-              <p id="nowPlayingSubtitle" class="track-sub">മലയാളം ലൈവ് സ്ട്രീമിംഗ്</p>
+              <h2 id="nowPlayingTitle" class="track-title"><span class="ml-text">മലയാളം റേഡിയോകൾ...</span><span class="en-text">Malayalam Radios...</span></h2>
+              <p id="nowPlayingSubtitle" class="track-sub"><span class="ml-text">മലയാളം ലൈവ് സ്ട്രീമിംഗ്</span><span class="en-text">Malayalam Live Streaming</span></p>
             </div>
           </div>
         </div>
@@ -147,29 +168,29 @@
     <div class="">
       <div class="preset-section-header">PRESETS</div>
       <div class="preset-toggles-container" id="presetPillsList">
-        <button class="preset-toggle-btn" data-preset="night-rain" title="Rain (40%) + Wind (20%) + Cricket (15%) + Fireplace (10%)">
+        <button class="preset-toggle-btn" data-preset="night-rain">
           <span class="preset-emoji">🌧️</span>
-          <span class="preset-name">രാത്രി മഴ</span>
+          <span class="preset-name"><span class="ml-text">രാത്രി മഴ</span><span class="en-text">Night Rain</span></span>
         </button>
-        <button class="preset-toggle-btn" data-preset="heavy-rain" title="Rain (40%) + Wind (20%) + Cricket (15%) + Thunder (40%)">
+        <button class="preset-toggle-btn" data-preset="heavy-rain">
           <span class="preset-emoji">⛈️</span>
-          <span class="preset-name">പെരുമഴകാലം</span>
+          <span class="preset-name"><span class="ml-text">പെരുമഴകാലം</span><span class="en-text">Heavy Rain</span></span>
         </button>
-        <button class="preset-toggle-btn" data-preset="morning" title="Birds (40%) + Wind (5%)">
+        <button class="preset-toggle-btn" data-preset="morning">
           <span class="preset-emoji">🌅</span>
-          <span class="preset-name">രാവിലെ</span>
+          <span class="preset-name"><span class="ml-text">രാവിലെ</span><span class="en-text">Morning</span></span>
         </button>
-        <button class="preset-toggle-btn" data-preset="river-bank" title="Boat (20%) + Birds (10%)">
+        <button class="preset-toggle-btn" data-preset="river-bank">
           <span class="preset-emoji">🛶</span>
-          <span class="preset-name">പുഴയോരം</span>
+          <span class="preset-name"><span class="ml-text">പുഴയോരം</span><span class="en-text">River Bank</span></span>
         </button>
-        <button class="preset-toggle-btn" data-preset="malabar-express" title="Train (40%) + Wind (10%)">
+        <button class="preset-toggle-btn" data-preset="malabar-express">
           <span class="preset-emoji">🚂</span>
-          <span class="preset-name">മലബാർ എക്സ്പ്രസ്സ്</span>
+          <span class="preset-name"><span class="ml-text">മലബാർ എക്സ്പ്രസ്സ്</span><span class="en-text">Malabar Express</span></span>
         </button>
-        <button class="preset-toggle-btn" data-preset="seashore" title="Waves (40%) + Teashop (15%)">
+        <button class="preset-toggle-btn" data-preset="seashore">
           <span class="preset-emoji">🌊</span>
-          <span class="preset-name">കടൽതീരം</span>
+          <span class="preset-name"><span class="ml-text">കടൽതീരം</span><span class="en-text">Seashore</span></span>
         </button>
 
         <div class="ambient-master-vol" style="margin-left: auto;" title="Master Ambient Volume">
@@ -185,9 +206,9 @@
       <div class="card-header">
         <h2>
           <i class="fa-solid fa-sliders"></i>
-          <span>ശബ്ദമിശ്രണം</span>
+          <span><span class="ml-text">ശബ്ദമിശ്രണം</span><span class="en-text">Sound Mixer</span></span>
         </h2>
-        <p class="subtitle">ഓരോ ശബ്ദവും നിങ്ങളുടെ ഇഷ്ടാനുസരണം ക്രമീകരിക്കാം</p>
+        <p class="subtitle"><span class="ml-text">ഓരോ ശബ്ദവും നിങ്ങളുടെ ഇഷ്ടാനുസരണം ക്രമീകരിക്കാം</span><span class="en-text">Adjust each sound to your liking</span></p>
       </div>
 
       <div class="ambient-grid">
@@ -198,7 +219,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🌧️</span>
               <div class="sc-titles">
-                <div class="sc-title">മഴ</div>
+                <div class="sc-title"><span class="ml-text">മഴ</span><span class="en-text">Rain</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -247,7 +268,7 @@
             <div class="sc-header">
               <span class="sc-emoji">💨</span>
               <div class="sc-titles">
-                <div class="sc-title">കാറ്റ്</div>
+                <div class="sc-title"><span class="ml-text">കാറ്റ്</span><span class="en-text">Wind</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -296,7 +317,7 @@
             <div class="sc-header">
               <span class="sc-emoji">⚡</span>
               <div class="sc-titles">
-                <div class="sc-title">ഇടിമിന്നൽ</div>
+                <div class="sc-title"><span class="ml-text">ഇടിമിന്നൽ</span><span class="en-text">Thunder</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -345,7 +366,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🦗</span>
               <div class="sc-titles">
-                <div class="sc-title">ചീവീടുകൾ</div>
+                <div class="sc-title"><span class="ml-text">ചീവീടുകൾ</span><span class="en-text">Crickets</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -394,7 +415,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🗣️</span>
               <div class="sc-titles">
-                <div class="sc-title">ചായക്കട</div>
+                <div class="sc-title"><span class="ml-text">ചായക്കട</span><span class="en-text">Tea Shop</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -443,7 +464,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🔥</span>
               <div class="sc-titles">
-                <div class="sc-title">അടുപ്പ്</div>
+                <div class="sc-title"><span class="ml-text">അടുപ്പ്</span><span class="en-text">Fireplace</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -492,7 +513,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🐦</span>
               <div class="sc-titles">
-                <div class="sc-title">കിളികൾ</div>
+                <div class="sc-title"><span class="ml-text">കിളികൾ</span><span class="en-text">Birds</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -541,7 +562,7 @@
             <div class="sc-header">
               <span class="sc-emoji">💧</span>
               <div class="sc-titles">
-                <div class="sc-title">പുഴയോരം</div>
+                <div class="sc-title"><span class="ml-text">പുഴയോരം</span><span class="en-text">River</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -590,7 +611,7 @@
             <div class="sc-header">
               <span class="sc-emoji">⛵</span>
               <div class="sc-titles">
-                <div class="sc-title">വഞ്ചി</div>
+                <div class="sc-title"><span class="ml-text">വഞ്ചി</span><span class="en-text">Boat</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -639,7 +660,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🏙️</span>
               <div class="sc-titles">
-                <div class="sc-title">അങ്ങാടി</div>
+                <div class="sc-title"><span class="ml-text">അങ്ങാടി</span><span class="en-text">City</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -688,7 +709,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🚆</span>
               <div class="sc-titles">
-                <div class="sc-title">തീവണ്ടി</div>
+                <div class="sc-title"><span class="ml-text">തീവണ്ടി</span><span class="en-text">Train</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -737,7 +758,7 @@
             <div class="sc-header">
               <span class="sc-emoji">🌊</span>
               <div class="sc-titles">
-                <div class="sc-title">കടലോരം</div>
+                <div class="sc-title"><span class="ml-text">കടലോരം</span><span class="en-text">Ocean</span></div>
               </div>
               <div class="sc-waves">
                 <div class="sc-wave-bar"></div>
@@ -783,6 +804,15 @@
 
   </main>
 
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p class="copyright">&copy; 2026 <span class="ml-text">ചായപ്പീടിക</span><span class="en-text">Chayapeedika</span>. All rights reserved.</p>
+      <div class="social-links">
+        <a href="https://github.com/rajeebbinrazaq" target="_blank" title="GitHub"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.instagram.com/rajeeb_binrazaq" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+    </div>
+  </footer>
   <!-- HLS Library for .m3u8 streams -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <!-- Audio Engine & Main App -->

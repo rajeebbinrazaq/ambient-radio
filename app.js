@@ -7,6 +7,7 @@ class App {
     this.radioStations = [];
     this.lastUnmutedVolume = 0.8;
     this.activePresetKey = null;
+    this.isELink = () => document.body.classList.contains('theme-elink');
     this.presets = {
       'night-rain': {
         name: 'രാത്രി മഴ',
@@ -43,6 +44,8 @@ class App {
     
     await this.fetchMalayalamRadioStations();
     this.restoreLastSavedSettings();
+    this._initClock();
+    this._initWeather();
   }
 
   _bindDOM() {
@@ -156,7 +159,8 @@ class App {
     let rawName = selectedOpt ? selectedOpt.textContent.trim() : 'Malayalam Radio';
     const name = st ? st.name : (rawName || 'Malayalam Radio');
     const favicon = st ? st.favicon : '';
-    this.updateNowPlayingInfo('LIVE RADIO', name, 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്', favicon);
+    const subtitleHtml = `<span class="ml-text">മലയാളം ലൈവ് സ്ട്രീമിംഗ്</span><span class="en-text">Malayalam Live Streaming</span>`;
+    this.updateNowPlayingInfo('LIVE RADIO', name, subtitleHtml, favicon);
     this._updateTuningNeedle();
   }
 
@@ -432,7 +436,7 @@ class App {
 
     if (this.radioStations.length > 0) {
       const optGroupApi = document.createElement('optgroup');
-      optGroupApi.label = `മലയാളം റേഡിയോകൾ (${this.radioStations.length})`;
+      optGroupApi.label = this.isELink() ? `Malayalam Radios (${this.radioStations.length})` : `മലയാളം റേഡിയോകൾ (${this.radioStations.length})`;
       
       this.radioStations.forEach((st) => {
         const opt = document.createElement('option');
@@ -445,14 +449,28 @@ class App {
       
 
       if (!localStorage.getItem('chaya_kada_last_station')) {
-        this.updateNowPlayingInfo('LIVE RADIO', this.radioStations[0].name, 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്');
+        const subtitleHtml = `<span class="ml-text">മലയാളം ലൈവ് സ്ട്രീമിംഗ്</span><span class="en-text">Malayalam Live Streaming</span>`;
+        this.updateNowPlayingInfo('LIVE RADIO', this.radioStations[0].name, subtitleHtml);
       }
     } else {
-      select.innerHTML = '<option value="">റേഡിയോ ലഭ്യമല്ല (ചെക്ക് കണക്ഷൻ)</option>';
+      select.innerHTML = this.isELink() ? '<option value="">Radio Unavailable (Check Connection)</option>' : '<option value="">റേഡിയോ ലഭ്യമല്ല (ചെക്ക് കണക്ഷൻ)</option>';
     }
   }
 
   _setupEventListeners() {
+
+    // Theme Toggle
+    const themeToggleCheckbox = document.getElementById('themeToggleCheckbox');
+    if (themeToggleCheckbox) {
+      themeToggleCheckbox.addEventListener('change', () => {
+        document.body.classList.toggle('theme-elink');
+        this.populateStationSelect();
+        const subtitleHtml = `<span class="ml-text">മലയാളം ലൈവ് സ്ട്രീമിംഗ്</span><span class="en-text">Malayalam Live Streaming</span>`;
+        if (this.elements.nowPlayingSubtitle && this.elements.nowPlayingSubtitle.innerHTML.includes('സ്ട്രീമിംഗ്') || this.elements.nowPlayingSubtitle.innerHTML.includes('Streaming')) {
+            this.elements.nowPlayingSubtitle.innerHTML = subtitleHtml;
+        }
+      });
+    }
 
     // Radio Play/Pause Controls
     if (this.elements.playPauseRadioBtn) {
@@ -624,22 +642,25 @@ class App {
     this._updateVolumeKnobGlow();
 
     if (this.elements.nowPlayingSubtitle) {
+      const mlText = 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്';
+      const enText = 'Malayalam Live Streaming';
+      const defaultHtml = `<span class="ml-text">${mlText}</span><span class="en-text">${enText}</span>`;
       if (isLoading) {
-        this.elements.nowPlayingSubtitle.textContent = 'കണക്ട് ചെയ്യുന്നു...';
+        this.elements.nowPlayingSubtitle.innerHTML = `<span class="ml-text">കണക്ട് ചെയ്യുന്നു...</span><span class="en-text">Connecting...</span>`;
       } else if (isPlaying) {
-        this.elements.nowPlayingSubtitle.textContent = 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്';
+        this.elements.nowPlayingSubtitle.innerHTML = defaultHtml;
       } else if (isError) {
-        this.elements.nowPlayingSubtitle.textContent = 'കണക്ഷൻ തടസ്സപ്പെട്ടു';
+        this.elements.nowPlayingSubtitle.innerHTML = `<span class="ml-text">കണക്ഷൻ തടസ്സപ്പെട്ടു</span><span class="en-text">Connection Interrupted</span>`;
       } else {
-        this.elements.nowPlayingSubtitle.textContent = 'മലയാളം ലൈവ് സ്ട്രീമിംഗ്';
+        this.elements.nowPlayingSubtitle.innerHTML = defaultHtml;
       }
     }
   }
 
-  updateNowPlayingInfo(tag, title, subtitle, favicon = '') {
+  updateNowPlayingInfo(tag, title, subtitleHtml, favicon = '') {
     if (this.elements.sourceTag) this.elements.sourceTag.textContent = tag;
     if (this.elements.nowPlayingTitle) this.elements.nowPlayingTitle.textContent = title;
-    if (this.elements.nowPlayingSubtitle) this.elements.nowPlayingSubtitle.textContent = subtitle;
+    if (this.elements.nowPlayingSubtitle) this.elements.nowPlayingSubtitle.innerHTML = subtitleHtml;
 
     if (this.elements.stationFavicon) {
       if (favicon && favicon.trim() !== '') {
@@ -744,6 +765,91 @@ class App {
     };
 
     render();
+  }
+
+  _initClock() {
+    const clockEl = document.getElementById('digitalClock');
+    if (!clockEl) return;
+
+    const updateClock = () => {
+      const now = new Date();
+      const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const istTime = new Date(utcTime + (330 * 60000)); // +5:30
+      
+      let hours = istTime.getHours();
+      let minutes = istTime.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      
+      clockEl.textContent = `${hours}:${minutes} ${ampm}`;
+      
+      const calendarEl = document.getElementById('calendarDate');
+      if (calendarEl) {
+        const mlSpan = calendarEl.querySelector('.ml-text');
+        const enSpan = calendarEl.querySelector('.en-text');
+        if (mlSpan && enSpan) {
+          const mlDateStr = new Intl.DateTimeFormat('ml-IN', {
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
+          }).format(now);
+          const enDateStr = new Intl.DateTimeFormat('en-IN', {
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
+          }).format(now);
+          mlSpan.textContent = mlDateStr;
+          enSpan.textContent = enDateStr;
+        }
+      }
+    };
+
+    updateClock();
+    setInterval(updateClock, 10000); // update frequently enough
+  }
+
+  _initWeather() {
+    const weatherEl = document.getElementById('weatherCondition');
+    if (!weatherEl) return;
+
+    const fetchWeather = async () => {
+      try {
+        // Fetch weather for Kochi, Kerala
+        const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=9.9312&longitude=76.2673&current_weather=true');
+        const data = await response.json();
+        
+        if (data && data.current_weather) {
+          const code = data.current_weather.weathercode;
+          const temp = Math.round(data.current_weather.temperature);
+          
+          let mlCondition = 'വ്യക്തമായ';
+          let enCondition = 'Clear';
+          let emoji = '☀️';
+          
+          if (code === 0) { mlCondition = 'തെളിഞ്ഞ ആകാശം'; enCondition = 'Clear Sky'; emoji = '☀️'; }
+          else if (code === 1 || code === 2 || code === 3) { mlCondition = 'മേഘാവൃതം'; enCondition = 'Cloudy'; emoji = '⛅'; }
+          else if (code === 45 || code === 48) { mlCondition = 'മൂടൽമഞ്ഞ്'; enCondition = 'Fog'; emoji = '🌫️'; }
+          else if (code >= 51 && code <= 57) { mlCondition = 'ചാറ്റൽ മഴ'; enCondition = 'Drizzle'; emoji = '🌦️'; }
+          else if (code >= 61 && code <= 67) { mlCondition = 'മഴ'; enCondition = 'Rain'; emoji = '🌧️'; }
+          else if (code >= 71 && code <= 77) { mlCondition = 'മഞ്ഞുവീഴ്ച'; enCondition = 'Snow'; emoji = '❄️'; }
+          else if (code >= 80 && code <= 82) { mlCondition = 'ശക്തമായ മഴ'; enCondition = 'Heavy Rain'; emoji = '⛈️'; }
+          else if (code >= 85 && code <= 86) { mlCondition = 'മഞ്ഞുവീഴ്ച'; enCondition = 'Snow'; emoji = '❄️'; }
+          else if (code >= 95 && code <= 99) { mlCondition = 'ഇടിമിന്നൽ'; enCondition = 'Thunderstorm'; emoji = '🌩️'; }
+          
+          const mlSpan = weatherEl.querySelector('.ml-text');
+          const enSpan = weatherEl.querySelector('.en-text');
+          
+          if (mlSpan && enSpan) {
+            mlSpan.textContent = `${emoji} ${temp}°C, ${mlCondition}`;
+            enSpan.textContent = `${emoji} ${temp}°C, ${enCondition}`;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch weather:', err);
+      }
+    };
+    
+    fetchWeather();
+    // Update every 30 minutes
+    setInterval(fetchWeather, 30 * 60 * 1000);
   }
 }
 

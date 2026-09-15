@@ -28,8 +28,245 @@
   --shadow-warm: 0 10px 30px rgba(0, 0, 0, 0.8);
   --glass-blur: blur(16px);
   
-  --font-ml: 'Manjari', 'Noto Sans Malayalam', sans-serif;
+  --font-ml: 'Anek Malayalam', 'Noto Sans Malayalam', sans-serif;
   --font-en: 'Outfit', sans-serif;
+}
+
+/* E-Link Theme (Black and White Grayscale High Contrast) */
+body.theme-elink {
+  --bg-dark: #F4F4F4;
+  --bg-card: #ffffff;
+  --bg-card-border: #CCCCCC;
+  
+  --wood-dark: #999999;
+  --wood-medium: #bbbbbb;
+  --wood-light: #dddddd;
+  
+  --tea-amber: #555555;
+  --tea-glow: rgba(0, 0, 0, 0.05);
+  --brass: #666666;
+  --brass-dark: #333333;
+  
+  --text-main: #1A1A1A;
+  --text-muted: #555555;
+  --text-dim: #777777;
+  
+  --accent-rain: #444444;
+  --accent-green: #222222;
+  --accent-red: #333333;
+  
+  --shadow-warm: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --glass-blur: none;
+  
+  --font-ml: 'Literata', serif;
+  --font-en: 'Literata', serif;
+}
+
+body.theme-elink .vintage-overlay {
+  background: none;
+  opacity: 0;
+}
+
+body.theme-elink #rainCanvas {
+  opacity: 0.15;
+  filter: grayscale(100%);
+}
+
+body.theme-elink .scene-frame {
+  background: #f8f8f8;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+body.theme-elink .tea-shop-art {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.9));
+  filter: grayscale(100%);
+}
+
+body.theme-elink .rain-drops-overlay {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.25) 1px, transparent 0);
+}
+
+body.theme-elink .window-pane {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6), rgba(220, 220, 220, 0.9));
+}
+
+body.theme-elink .radio-cabinet {
+  background: linear-gradient(160deg, #f0f0f0 0%, #e0e0e0 60%, #d0d0d0 100%);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1), 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+body.theme-elink .radio-knob {
+  background: #f0f0f0;
+  border-color: #ccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+body.theme-elink .tuning-select-center {
+  color: #333333;
+}
+body.theme-elink .tuning-select-center.is-streaming {
+  color: #111111;
+  font-weight: 800;
+}
+body.theme-elink .tuning-select-center.is-loading {
+  color: #555555;
+}
+body.theme-elink .radio-indicator-light.active {
+  background: #333;
+  border-color: #111;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* E-Link Theme Overrides for Ambient Grid, Radio Dial, Badges, and Presets */
+body.theme-elink .sc {
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+body.theme-elink .sc-bg-glow {
+  display: none;
+}
+body.theme-elink .sc:hover, 
+body.theme-elink .sc.active {
+  background: #f4f4f4;
+  border-color: #999999;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+body.theme-elink .sc-title {
+  color: #111111;
+}
+
+body.theme-elink .radio-tuning-dial {
+  background: #f9f9f9;
+  border: 1px solid #cccccc;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+body.theme-elink .freq-band {
+  color: #555555;
+}
+body.theme-elink .band-name {
+  color: #111111;
+}
+body.theme-elink .tuning-needle {
+  background: #000000;
+  box-shadow: none;
+}
+
+body.theme-elink .now-playing-badge {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #cccccc;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  color: #111111;
+}
+body.theme-elink .now-playing-badge .track-title {
+  color: #111111;
+}
+body.theme-elink .now-playing-badge .track-sub {
+  color: #555555;
+}
+body.theme-elink .station-avatar {
+  display: none;
+}
+body.theme-elink .station-fallback-icon {
+  color: #333333;
+}
+body.theme-elink .source-tag {
+  color: #333333;
+}
+
+body.theme-elink .preset-toggle-btn {
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  color: #555555;
+}
+body.theme-elink .preset-toggle-btn:hover {
+  background: #f0f0f0;
+  border-color: #999999;
+  color: #111111;
+}
+body.theme-elink .preset-toggle-btn.active {
+  background: #e0e0e0;
+  border-color: #333333;
+  color: #111111;
+  box-shadow: none;
+}
+body.theme-elink .preset-emoji {
+  filter: grayscale(100%) !important;
+}
+body.theme-elink .preset-toggle-btn:hover .preset-emoji,
+body.theme-elink .preset-toggle-btn.active .preset-emoji {
+  filter: grayscale(100%) !important;
+}
+
+body.theme-elink .card-header h2,
+body.theme-elink .card-header .subtitle,
+body.theme-elink .preset-section-header {
+  color: #111111;
+}
+body.theme-elink .preset-section-header::after {
+  background: #cccccc;
+}
+
+/* E-Link Theme Slider Overrides */
+body.theme-elink .ambient-master-slider,
+body.theme-elink .vol-slider {
+  background: #cccccc;
+  height: 3px;
+  border-radius: 2px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+body.theme-elink .ambient-master-slider::-webkit-slider-thumb,
+body.theme-elink .vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #1a1a1a;
+  box-shadow: 0 0 3px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+body.theme-elink .ambient-master-slider::-webkit-slider-thumb:hover,
+body.theme-elink .vol-slider::-webkit-slider-thumb:hover {
+  background: #1a1a1a;
+  transform: scale(1.2);
+}
+
+/* E-Link Theme Badge Overrides */
+body.theme-elink .radio-brand-badge,
+body.theme-elink .knob-label,
+body.theme-elink .radio-speaker-badge,
+body.theme-elink .radio-brand-badge i {
+  color: #1A1A1A;
+}
+
+/* Theme Toggle Localization Classes */
+.en-text { display: none; }
+body.theme-elink .en-text { display: inline; }
+body.theme-elink .ml-text { display: none; }
+
+/* E-Link Theme Header Overrides */
+body.theme-elink .app-header {
+  background: #ffffff;
+  border-bottom: 1px solid #cccccc;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+body.theme-elink .tea-cup-icon {
+  background: #f4f4f4;
+  color: #1a1a1a;
+  border: 1px solid #cccccc;
+}
+body.theme-elink .brand-text h1 {
+  text-shadow: none;
+}
+body.theme-elink .digital-clock {
+  color: #1a1a1a;
+}
+body.theme-elink .calendar-date,
+body.theme-elink .weather-condition {
+  color: #555555;
 }
 
 * {
@@ -150,6 +387,96 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.clock-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-right: 15px;
+}
+
+.digital-clock {
+  font-family: var(--font-en);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 1px;
+  line-height: 1.1;
+}
+
+.calendar-date {
+  font-family: var(--font-ml);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+.weather-condition {
+  font-family: var(--font-ml);
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 1px;
+}
+
+/* Theme Toggle Switch */
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.theme-icon {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.4);
+  transition: color 0.3s;
+}
+body:not(.theme-elink) .theme-icon.monsoon-icon {
+  color: rgba(255, 255, 255, 0.9);
+}
+body.theme-elink .theme-icon.elink-icon {
+  color: #1a1a1a;
+}
+body.theme-elink .theme-icon.monsoon-icon {
+  color: rgba(0, 0, 0, 0.3);
+}
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+}
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.theme-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(90, 88, 125, 0.4);
+  transition: .4s;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.theme-switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 2px;
+  background-color: #f5ead6;
+  transition: .4s;
+  border-radius: 50%;
+}
+.theme-switch input:checked + .slider {
+  background-color: #cccccc;
+  border-color: #999999;
+}
+.theme-switch input:checked + .slider:before {
+  transform: translateX(14px);
+  background-color: #1a1a1a;
 }
 
 /* Button Styles */
@@ -950,7 +1277,7 @@ body {
   transition: all 0.2s ease;
   color: var(--text-muted);
   font-family: var(--font-ml);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -1281,7 +1608,7 @@ body {
 }
 
 .sc-title-ml {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: rgba(185, 183, 215, 0.65);
   transition: color 0.3s ease;
@@ -1298,7 +1625,7 @@ body {
 
 .sc-title-en {
   font-family: var(--font-en);
-  font-size: 10px;
+  font-size: 8.5px;
   font-weight: 500;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -1445,6 +1772,56 @@ body {
   height: 1px;
   opacity: 0.01;
   pointer-events: none;
+}
+
+/* Footer Styles */
+.app-footer {
+  width: 100%;
+  padding: 1.5rem 2rem;
+  background-color: rgba(38, 36, 60, 0.4);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin-top: 3rem;
+}
+body.theme-elink .app-footer {
+  background-color: transparent;
+  border-top: 1px solid #cccccc;
+}
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-content .copyright {
+  font-size: 0.8rem;
+  color: #ffffff;
+}
+body.theme-elink .footer-content .copyright {
+  color: #555555;
+}
+.footer-content .social-links {
+  display: flex;
+  gap: 15px;
+}
+.footer-content .social-links a {
+  color: #ffffff;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease, color 0.3s ease, text-shadow 0.3s ease;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.footer-content .social-links a:hover {
+  color: #f5ead6;
+  transform: scale(1.1);
+  text-shadow: 0 0 10px rgba(245, 234, 214, 0.8), 0 0 20px rgba(245, 234, 214, 0.6);
+}
+body.theme-elink .footer-content .social-links a {
+  color: #555555;
+  text-shadow: none;
+}
+body.theme-elink .footer-content .social-links a:hover {
+  color: #1a1a1a;
+  text-shadow: none;
 }
 
 /* Responsive adjustments */
