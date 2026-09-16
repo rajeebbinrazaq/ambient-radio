@@ -1591,7 +1591,7 @@ body.theme-elink .theme-icon.monsoon-icon {
 
 .sc-emoji {
   font-size: 26px;
-  filter: grayscale(20%) opacity(75%);
+  filter: grayscale(100%) opacity(75%);
   transition: filter 0.35s ease, transform 0.35s ease;
   line-height: 1;
 }
