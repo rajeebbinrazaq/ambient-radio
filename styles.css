@@ -611,6 +611,7 @@ body.theme-elink .theme-icon.monsoon-icon {
 /* Scene Card & Art */
 /* Scene Card & Art */
 .scene-card, .mixer-card {
+  position: relative;
   background: var(--bg-card);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--bg-card-border);
@@ -1825,7 +1826,170 @@ body.theme-elink .footer-content .social-links a:hover {
   text-shadow: none;
 }
 
+/* ==========================================================================
+   BREAKING NEWS SIDEBAR
+   ========================================================================== */
+.news-sidebar,
+.calendar-sidebar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 250px;
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(90, 88, 125, 0.1);
+  box-shadow: none;
+  color: var(--text-muted);
+  font-family: var(--font-en);
+  display: flex;
+  flex-direction: column;
+  padding: 1.2rem;
+  border-radius: 20px;
+  overflow: hidden;
+  z-index: 10;
+  opacity: 0.75;
+  transition: opacity 0.3s ease;
+}
+
+.news-sidebar {
+  right: calc(100% + 1rem);
+}
+
+.calendar-sidebar {
+  left: calc(100% + 1rem);
+}
+
+.news-sidebar:hover,
+.calendar-sidebar:hover {
+  opacity: 1;
+}
+
+.news-sidebar-header,
+.calendar-sidebar-header {
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-align: center;
+  border-bottom: 1px solid rgba(90, 88, 125, 0.15);
+  padding: 0.5rem 0;
+  margin-bottom: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 2;
+  position: relative;
+  color: var(--text-muted);
+}
+
+.calendar-sidebar-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.cal-day-name {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.cal-date {
+  font-size: 0.9rem;
+  padding: 5px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  color: var(--text-main);
+}
+
+.cal-date.empty {
+  cursor: default;
+}
+
+.cal-date:not(.empty):hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cal-date.today {
+  background: var(--brass);
+  color: #000;
+  font-weight: bold;
+}
+
+.cal-date.holiday {
+  color: #ff6b6b;
+  font-weight: bold;
+  border-bottom: 2px solid #ff6b6b;
+}
+
+.calendar-details {
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem;
+  border-top: 1px dashed rgba(90, 88, 125, 0.15);
+  width: 100%;
+  color: var(--text-muted);
+  min-height: 50px;
+}
+
+
+.news-sidebar-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  /* Allow fading out at edges for a cleaner look */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+}
+
+.news-marquee-track {
+  display: flex;
+  flex-direction: column;
+  animation: scrollUpNews 60s linear infinite;
+}
+
+.news-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scrollUpNews {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+.news-item {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  text-align: left;
+  padding: 1.2rem 0;
+  border-bottom: 1px dashed rgba(90, 88, 125, 0.15);
+}
+
+
+
 /* Responsive adjustments */
+@media (max-width: 1550px) {
+  .news-sidebar,
+  .calendar-sidebar {
+    position: static;
+    transform: none;
+    width: 100%;
+    height: 300px;
+    margin-bottom: 1.5rem;
+  }
+}
+
 @media (max-width: 1200px) {
   .ambient-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -1847,4 +2011,40 @@ body.theme-elink .footer-content .social-links a:hover {
   .ambient-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================================================
+   E-LINK THEME COMPACT FONT SIZES
+   ========================================================================== */
+body.theme-elink .news-sidebar-header,
+body.theme-elink .calendar-sidebar-header {
+  font-size: 0.95rem;
+}
+
+body.theme-elink .news-item {
+  font-size: 0.85rem;
+}
+
+body.theme-elink .cal-day-name {
+  font-size: 0.65rem;
+}
+
+body.theme-elink .cal-date {
+  font-size: 0.8rem;
+}
+
+body.theme-elink .calendar-details {
+  font-size: 0.8rem;
+}
+
+body.theme-elink .mixer-card .card-header h2 {
+  font-size: 1.1rem;
+}
+
+body.theme-elink .mixer-card .subtitle {
+  font-size: 0.75rem;
+}
+
+body.theme-elink .mixer-card .sc-title {
+  font-size: 0.8rem;
 }

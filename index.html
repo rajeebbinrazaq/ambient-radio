@@ -61,8 +61,17 @@
   <!-- Main Container -->
   <main class="main-layout">
 
-    <!-- Left Column: Tea Shop Visual Scene & Now Playing -->
+    <!-- Left Column: News Sidebar & Tea Shop Visual Scene -->
     <section class="scene-card">
+      <aside class="news-sidebar">
+        <div class="news-sidebar-header">
+          <span class="ml-text">പ്രധാന വാർത്തകൾ</span><span class="en-text">BREAKING NEWS</span>
+        </div>
+        <div class="news-sidebar-content" id="newsTickerContent">
+          <div class="news-item">Fetching latest news...</div>
+        </div>
+      </aside>
+
       <div class="radio-cabinet">
         <!-- Vintage Top Radio Bezel & Power LED -->
         <div class="radio-top-bezel">
@@ -162,6 +171,20 @@
           </div>
         </div>
       </div>
+
+      <aside class="calendar-sidebar">
+        <div class="calendar-sidebar-header">
+          <span class="ml-text" id="calendarMonthMl"></span><span class="en-text" id="calendarMonthEn"></span>
+        </div>
+        <div class="calendar-sidebar-content">
+          <div class="calendar-grid" id="calendarGrid">
+            <!-- Calendar JS injects here -->
+          </div>
+          <div class="calendar-details" id="calendarDetails">
+            <!-- Selected date details -->
+          </div>
+        </div>
+      </aside>
     </section>
 
     <!-- Ambient Sound Combo Presets (Single Preset Toggle Button) -->

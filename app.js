@@ -46,6 +46,8 @@ class App {
     this.restoreLastSavedSettings();
     this._initClock();
     this._initWeather();
+    this._initBreakingNews();
+    this._initCalendar();
   }
 
   _bindDOM() {
@@ -481,6 +483,9 @@ class App {
         if (this.elements.nowPlayingSubtitle && this.elements.nowPlayingSubtitle.innerHTML.includes('സ്ട്രീമിംഗ്') || this.elements.nowPlayingSubtitle.innerHTML.includes('Streaming')) {
             this.elements.nowPlayingSubtitle.innerHTML = subtitleHtml;
         }
+        if (this.breakingNewsArticles) {
+          this._renderBreakingNews();
+        }
       });
     }
 
@@ -862,6 +867,199 @@ class App {
     fetchWeather();
     // Update every 30 minutes
     setInterval(fetchWeather, 30 * 60 * 1000);
+  }
+
+  async _renderBreakingNews() {
+    const tickerContent = document.getElementById('newsTickerContent');
+    if (!tickerContent || !this.breakingNewsArticles) return;
+
+    if (this.breakingNewsArticles.length === 0) {
+      tickerContent.innerHTML = '<div class="news-item">Unable to fetch latest news at the moment.</div>';
+      return;
+    }
+
+    tickerContent.innerHTML = '<div class="news-item">Loading news...</div>';
+    
+    let titles = this.breakingNewsArticles.map(a => a.title);
+
+    // If monsoon theme (not e-link), translate to Malayalam
+    if (!this.isELink()) {
+      // Translate each title sequentially to ensure high success rate
+      // and avoid delimiter parsing issues with the API.
+      for (let i = 0; i < titles.length; i++) {
+        try {
+          // Use Google Translate's free client-side API for unlimited, high-quality translations
+          const googleRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ml&dt=t&q=${encodeURIComponent(titles[i])}`);
+          if (googleRes.ok) {
+            const data = await googleRes.json();
+            if (data && data[0]) {
+              // Combine translated sentences if Google split them
+              titles[i] = data[0].map(x => x[0]).join('');
+              continue;
+            }
+          }
+        } catch (e) {
+          console.warn('Google Translate failed for index ' + i + ', trying fallback...', e);
+        }
+
+        try {
+          // Fallback to MyMemory with a valid email parameter which increases the free limit to 50,000 chars/day
+          const fallbackEmail = 'user' + Math.floor(Math.random() * 10000) + '@ambientradio.local';
+          const transResponse = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(titles[i])}&langpair=en|ml&de=${fallbackEmail}`);
+          const transData = await transResponse.json();
+          if (transData && transData.responseData && transData.responseData.translatedText) {
+            const translated = transData.responseData.translatedText;
+            if (!translated.includes('MYMEMORY WARNING')) {
+              titles[i] = translated;
+            }
+          }
+        } catch (e) {
+          console.error('Fallback translation failed for index ' + i, e);
+        }
+      }
+    }
+
+    tickerContent.innerHTML = '';
+    
+    // Create a track for the scrolling marquee
+    const track = document.createElement('div');
+    track.className = 'news-marquee-track';
+
+    // Duplicate the titles to create a seamless infinite loop
+    const allTitles = [...titles, ...titles];
+
+    allTitles.forEach((title) => {
+      if (title) {
+        const div = document.createElement('div');
+        div.className = 'news-item';
+        div.textContent = title.trim();
+        track.appendChild(div);
+      }
+    });
+
+    tickerContent.appendChild(track);
+
+    // Clear old slideshow interval if any
+    if (this.newsInterval) {
+      clearInterval(this.newsInterval);
+      this.newsInterval = null;
+    }
+  }
+
+  async _initBreakingNews() {
+    const apiKey = '678a714e32c047aabe225f15101c5407';
+    this.breakingNewsArticles = [];
+    
+    try {
+      // Fetch Kerala news and India/Global news in parallel
+      const [keralaRes, indiaRes] = await Promise.all([
+        fetch(`https://newsapi.org/v2/everything?q=Kerala&sortBy=publishedAt&language=en&apiKey=${apiKey}`),
+        fetch(`https://newsapi.org/v2/everything?q=India OR World&sortBy=publishedAt&language=en&apiKey=${apiKey}`)
+      ]);
+
+      const keralaData = await keralaRes.json();
+      const indiaData = await indiaRes.json();
+
+      let combinedArticles = [];
+      
+      // Prioritize Kerala news (take top 6)
+      if (keralaData.status === 'ok' && keralaData.articles) {
+        combinedArticles.push(...keralaData.articles.slice(0, 6));
+      }
+      
+      // Add India & Global news (take top 4)
+      if (indiaData.status === 'ok' && indiaData.articles) {
+        combinedArticles.push(...indiaData.articles.slice(0, 4));
+      }
+
+      this.breakingNewsArticles = combinedArticles;
+    } catch (error) {
+      console.error('Error fetching breaking news:', error);
+      this.breakingNewsArticles = [];
+    }
+    
+    await this._renderBreakingNews();
+  }
+
+  _initCalendar() {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const calendarGrid = document.getElementById('calendarGrid');
+    const calendarDetails = document.getElementById('calendarDetails');
+    const mlTitle = document.getElementById('calendarMonthMl');
+    const enTitle = document.getElementById('calendarMonthEn');
+    
+    if (!calendarGrid || !mlTitle || !enTitle) return;
+
+    const monthNamesEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthNamesMl = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ", "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
+    const daysEn = ["S", "M", "T", "W", "T", "F", "S"];
+    const daysMl = ["ഞാ", "തി", "ചൊ", "ബു", "വ", "വെ", "ശനി"];
+
+    mlTitle.textContent = `${monthNamesMl[currentMonth]} ${currentYear}`;
+    enTitle.textContent = `${monthNamesEn[currentMonth]} ${currentYear}`;
+
+    // Clear grid
+    calendarGrid.innerHTML = '';
+    calendarDetails.innerHTML = '';
+
+    // Headers
+    for (let i = 0; i < 7; i++) {
+      const header = document.createElement('div');
+      header.className = 'cal-day-name';
+      header.innerHTML = `<span class="ml-text">${daysMl[i]}</span><span class="en-text">${daysEn[i]}</span>`;
+      calendarGrid.appendChild(header);
+    }
+
+    // Kerala Holidays (2026 approximation)
+    const holidays = {
+      "0-26": { en: "Republic Day", ml: "റിപ്പബ്ലിക് ദിനം" },
+      "3-14": { en: "Vishu", ml: "വിഷു" },
+      "7-15": { en: "Independence Day", ml: "സ്വാതന്ത്ര്യ ദിനം" },
+      "7-27": { en: "Thiruvonam", ml: "തിരുവോണം" },
+      "8-5": { en: "Teachers' Day", ml: "അധ്യാപക ദിനം" },
+      "8-16": { en: "Sree Narayana Guru Jayanthi", ml: "ശ്രീ നാരായണ ഗുരു ജയന്തി" },
+      "9-2": { en: "Gandhi Jayanti", ml: "ഗാന്ധി ജയന്തി" },
+      "10-1": { en: "Kerala Piravi", ml: "കേരള പിറവി" },
+      "11-25": { en: "Christmas", ml: "ക്രിസ്മസ്" }
+    };
+
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+    // Empty spaces for first day offset
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'cal-date empty';
+      calendarGrid.appendChild(empty);
+    }
+
+    // Generate days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateCell = document.createElement('div');
+      dateCell.className = 'cal-date';
+      dateCell.textContent = day;
+
+      if (day === today.getDate()) {
+        dateCell.classList.add('today');
+      }
+
+      const holidayKey = `${currentMonth}-${day}`;
+      if (holidays[holidayKey]) {
+        dateCell.classList.add('holiday');
+        
+        // Setup hover details
+        dateCell.addEventListener('mouseenter', () => {
+          calendarDetails.innerHTML = `<span class="ml-text">${holidays[holidayKey].ml}</span><span class="en-text">${holidays[holidayKey].en}</span>`;
+        });
+        dateCell.addEventListener('mouseleave', () => {
+          calendarDetails.innerHTML = '';
+        });
+      }
+
+      calendarGrid.appendChild(dateCell);
+    }
   }
 }
 
