@@ -947,14 +947,16 @@ class App {
   }
 
   async _initBreakingNews() {
-    const apiKey = '678a714e32c047aabe225f15101c5407';
     this.breakingNewsArticles = [];
     
     try {
-      // Fetch Kerala news and India/Global news in parallel
+      const keralaRssUrl = encodeURIComponent('https://news.google.com/rss/search?q=Kerala&hl=en-IN&gl=IN&ceid=IN:en');
+      const indiaRssUrl = encodeURIComponent('https://news.google.com/rss/search?q=India+OR+World&hl=en-IN&gl=IN&ceid=IN:en');
+      
+      // Fetch Kerala news and India/Global news in parallel via rss2json
       const [keralaRes, indiaRes] = await Promise.all([
-        fetch(`https://newsapi.org/v2/everything?q=Kerala&sortBy=publishedAt&language=en&apiKey=${apiKey}`),
-        fetch(`https://newsapi.org/v2/everything?q=India OR World&sortBy=publishedAt&language=en&apiKey=${apiKey}`)
+        fetch(`https://api.rss2json.com/v1/api.json?rss_url=${keralaRssUrl}`),
+        fetch(`https://api.rss2json.com/v1/api.json?rss_url=${indiaRssUrl}`)
       ]);
 
       const keralaData = await keralaRes.json();
@@ -963,13 +965,13 @@ class App {
       let combinedArticles = [];
       
       // Prioritize Kerala news (take top 6)
-      if (keralaData.status === 'ok' && keralaData.articles) {
-        combinedArticles.push(...keralaData.articles.slice(0, 6));
+      if (keralaData.status === 'ok' && keralaData.items) {
+        combinedArticles.push(...keralaData.items.slice(0, 6));
       }
       
       // Add India & Global news (take top 4)
-      if (indiaData.status === 'ok' && indiaData.articles) {
-        combinedArticles.push(...indiaData.articles.slice(0, 4));
+      if (indiaData.status === 'ok' && indiaData.items) {
+        combinedArticles.push(...indiaData.items.slice(0, 4));
       }
 
       this.breakingNewsArticles = combinedArticles;
